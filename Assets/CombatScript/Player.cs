@@ -1,6 +1,7 @@
 using System;
 using System.Data.SqlTypes;
 using UnityEngine;
+using static Player;
 
 public class Player : MonoBehaviour
 {
@@ -11,59 +12,45 @@ public class Player : MonoBehaviour
     private RelicManager relicM;
     public class PlayerState
     {
-        private Player player;
         public int maxHp { set; private get; }
-        public int hp
-        {
-            get => hp;
-            set
-            {
-                if (value > 0)
-                {
-                    hp = Mathf.Max(0, hp - value);
-                    player.TakeDamage();
-                    if (hp <= 0)
-                    {
-                        player.Died();
-                    }
-                }
-                else { hp = Mathf.Min(maxHp, hp - value); }
-            }
+        private int _hp;
+        public int hp {
+            get => _hp;
+            set => _hp = Mathf.Max(0, value);
         }
-        public int money
-        {
-            get => money;
-            set
-            {
-                money = Mathf.Max(0, money - value);
-            }
-        }
+        private int _money;
+        public int money 
+        { 
+            get => _money;
+            set => _money = Mathf.Max(0, value); }
 
         public int savingMaximumValue { get; set; }
         public int savingMaximumDice { get; set; }
 
-        public PlayerState(PlayerInitValue piv, Player player)
+        public PlayerState(PlayerInitValue piv)
         {
             maxHp = piv.maxHp;
             hp = maxHp;
             money = piv.money;
             savingMaximumDice = piv.savingMaximumDice;
             savingMaximumValue = piv.savingMaximumValue;
-            this.player = player;
+        
         }
     }
     public PlayerState playerState { get; private set; }
 
     private void Awake()
     {
-        playerState = new PlayerState(piv, this);
+        playerState = new PlayerState(piv);
     }
-    public void Died() 
+    
+    public void TakeDamage(int damage)
     {
-        OnPlayerDied?.Invoke();
-    }
-    public void TakeDamage()
-    {
+        playerState.hp -= damage;
+        if (playerState.hp <= 0)
+        {
+            OnPlayerDied?.Invoke();
+        }
         OnPlayerDamaged?.Invoke();
     }
 
