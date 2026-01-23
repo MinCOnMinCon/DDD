@@ -46,7 +46,7 @@ GameObject:
   - component: {fileID: 164952328201644661}
   m_Layer: 0
   m_Name: Dice
-  m_TagString: Untagged
+  m_TagString: Dice
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -144,6 +144,7 @@ MonoBehaviour:
   eyeSizeNormal: 0.3
   eyeSizeSingle: 0.5
   eyeDistant: 0.4
+  throwingSpeed: 5
 --- !u!50 &6364149092405144655
 Rigidbody2D:
   serializedVersion: 5

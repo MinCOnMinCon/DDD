@@ -11,6 +11,10 @@ public enum DiceType
 public class Dice : MonoBehaviour
 {
     public DiceData diceData { get; private set; }
+
+    private BoxCollider2D diceCollider;
+    private Rigidbody2D diceRigidbody;
+
     [SerializeField] private Transform eyesRoot;        // pipsRoot → eyesRoot
     [SerializeField] private GameObject eyePrefab;      // pipPrefab → eyePrefab
     [SerializeField] private SpriteRenderer backgroundRenderer;
@@ -19,10 +23,22 @@ public class Dice : MonoBehaviour
     [SerializeField] private float eyeSizeSingle = 0.28f;   // 1 전용 (좀 큼)
     [SerializeField] private float eyeDistant = 0.4f;
     private Color eyeColor;
-    private Vector3[][] eyePositions; 
+    private Vector3[][] eyePositions;
+
+    private bool isCursorIn;
+    private Vector3 cursorPos;
+
+    private Vector3 prevFramePos; //  드래그했을 때 이전 프레임에서 주사위 위치
+    private Vector3 curFramePos; // 드래그가 끝났을 때의 주사위 위치
+    [SerializeField]
+    private float throwingSpeed; // 주사위 드래그 끝나고 날라가는 속도를 느리게 하기 위한 변수 
+   
 
     public void DiceInit(int eye, DiceType type)
     {
+        diceRigidbody.angularVelocity = 0;
+        diceRigidbody.linearVelocity = Vector2.zero;
+        ClearEyes();
         diceData = new DiceData(eye, type);
         SetType(type);
         SpawnEyes(eye);
@@ -30,7 +46,52 @@ public class Dice : MonoBehaviour
     }
     private void Awake()
     {
+        isCursorIn = false;
         BuildEyePositions();
+        diceCollider = GetComponent<BoxCollider2D>();
+        diceRigidbody = GetComponent<Rigidbody2D>();
+    }
+    private void Update()
+    {
+        cursorPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+        DiceDrag();
+    }
+    
+   
+
+    private void DiceDrag()
+    {
+        
+        if (Input.GetMouseButtonDown(0) && diceCollider.OverlapPoint(cursorPos))
+        {
+            diceRigidbody.gravityScale = 0f;
+            diceRigidbody.angularVelocity = 0f;
+            diceCollider.isTrigger = true;
+            isCursorIn = true;
+        }
+     
+        if (Input.GetMouseButtonUp(0) && isCursorIn)
+        {
+            diceRigidbody.gravityScale = 1f;
+            diceCollider.isTrigger = false;
+            isCursorIn = false;
+            curFramePos = cursorPos;
+            Debug.Log(curFramePos +" "+ prevFramePos  +" "+Time.deltaTime);
+            diceRigidbody.linearVelocityX = (curFramePos.x - prevFramePos.x) / (Time.deltaTime * throwingSpeed);
+            diceRigidbody.linearVelocityY = (curFramePos.y - prevFramePos.y) / (Time.deltaTime * throwingSpeed);
+            Debug.Log(diceRigidbody.linearVelocity + "rear");
+        }
+
+        if (isCursorIn)
+        {
+
+            cursorPos.z = 0;
+            gameObject.transform.position = cursorPos;
+            prevFramePos = cursorPos;
+
+        }
+
     }
     private void BuildEyePositions()
     {
