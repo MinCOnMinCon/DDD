@@ -1,15 +1,19 @@
 using System;
 using System.Data.SqlTypes;
+using System.Security.Cryptography;
+using Unity.Collections;
 using UnityEngine;
 using static Player;
 
-public class Player : MonoBehaviour
+public class Player : MonoBehaviour, ICombatHook, ICombatContextProvider
 {
 
     [SerializeField]
     private PlayerInitValue piv;
     private DiceManager diceM;
     private RelicManager relicM;
+    [SerializeField]
+    private int order;
     
     public PlayerState playerState { get; private set; }
 
@@ -17,7 +21,13 @@ public class Player : MonoBehaviour
     {
         playerState = new PlayerState(piv);
     }
-    
+    private void Start()
+    {
+        ApplyTo(CombatManager.inst.combatContext);
+        
+
+    }
+
     public void TakeDamage(int damage)
     {
         playerState.hp -= damage;
@@ -31,6 +41,31 @@ public class Player : MonoBehaviour
     public event Action OnPlayerDied;
     public event Action OnPlayerDamaged;
 
+    public void OnCombatPhase(CombatPhase phase, CombatContext ctx)
+    {
+        switch (phase)
+        {
+            case CombatPhase.valueSubmit:
+                //ctx에서 적 공격 수치 읽어서 takedamage 함수 호출
+                break;
+        }
+    }
+    public int GetOrder()
+    {
+        return order;
+    }
+
+    public bool CanExecute(CombatPhase phase)
+    {
+        bool canExecute = true ? phase == CombatPhase.turnEnd : false;
+        return canExecute;
+
+    }
+    
+    public void ApplyTo(CombatContext ctx)
+    {
+        ctx.playerState = playerState;
+    }
 }
 
 public class PlayerState

@@ -6,10 +6,11 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using ue = UnityEngine;
 
-public class DiceManager : MonoBehaviour
+public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider
 {
+    [SerializeField]
+    private int order;
     
-
     
     [SerializeField]
     private DiceInitValue div;
@@ -100,6 +101,34 @@ public class DiceManager : MonoBehaviour
         }
         return 0;
     }
+
+    public void OnCombatPhase(CombatPhase phase, CombatContext ctx)
+    {
+        switch (phase)
+        {
+            case CombatPhase.turnStart:
+                ConfirmDice(diceState.basicDiceNum, DiceType.basic);
+                ConfirmDice(diceState.penaltyDiceNum, DiceType.penalty);
+                break;
+            case CombatPhase.turnEnd:
+                break;
+        }
+       
+    }
+    public int GetOrder()
+    {
+        return order;
+    }
+    public bool CanExecute(CombatPhase phase)
+    {
+        bool canExecute = true ? phase == CombatPhase.turnStart || phase == CombatPhase.turnEnd: false;
+        return canExecute;
+    }
+    public void ApplyTo(CombatContext ctx)
+    {
+        ctx.diceState = diceState;
+    }
+
 }
 
 public class DiceState
