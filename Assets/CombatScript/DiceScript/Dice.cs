@@ -77,10 +77,11 @@ public class Dice : MonoBehaviour
             diceCollider.isTrigger = false;
             isCursorIn = false;
             curFramePos = cursorPos;
-            Debug.Log(curFramePos +" "+ prevFramePos  +" "+Time.deltaTime);
+            //Debug.Log(curFramePos +" "+ prevFramePos  +" "+Time.deltaTime);
             diceRigidbody.linearVelocityX = (curFramePos.x - prevFramePos.x) / (Time.deltaTime * throwingSpeed);
             diceRigidbody.linearVelocityY = (curFramePos.y - prevFramePos.y) / (Time.deltaTime * throwingSpeed);
-            Debug.Log(diceRigidbody.linearVelocity + "rear");
+            //Debug.Log(diceRigidbody.linearVelocity + "rear");
+            CombatManager.inst.CommitSlotChanges();
         }
 
         if (isCursorIn)

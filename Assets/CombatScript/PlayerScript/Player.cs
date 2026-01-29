@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Security.Cryptography;
 using Unity.Collections;
@@ -13,7 +14,7 @@ public class Player : MonoBehaviour, ICombatHook, ICombatContextProvider
     private DiceManager diceM;
     private RelicManager relicM;
     [SerializeField]
-    private int order;
+    private Dictionary<CombatPhase, int> orders;
     
     public PlayerState playerState { get; private set; }
 
@@ -23,12 +24,12 @@ public class Player : MonoBehaviour, ICombatHook, ICombatContextProvider
     }
     private void Start()
     {
+        CombatManager.inst.HookRegister(this);
         ApplyTo(CombatManager.inst.combatContext);
-        
 
     }
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage, CombatContext ctx)
     {
         playerState.hp -= damage;
         if (playerState.hp <= 0)
@@ -50,9 +51,9 @@ public class Player : MonoBehaviour, ICombatHook, ICombatContextProvider
                 break;
         }
     }
-    public int GetOrder()
+    public int GetOrder(CombatPhase phase)
     {
-        return order;
+        return orders.TryGetValue(phase, out int order) ? order : int.MaxValue;
     }
 
     public bool CanExecute(CombatPhase phase)

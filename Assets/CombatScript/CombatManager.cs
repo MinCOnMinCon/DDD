@@ -1,5 +1,7 @@
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 public class CombatManager : MonoBehaviour
@@ -7,23 +9,54 @@ public class CombatManager : MonoBehaviour
     public CombatContext combatContext { get; private set; }
     public static CombatManager inst { get; private set; }
     private List<ICombatHook> combatHooks = new List<ICombatHook>();
+
+    private List<DiceSlot> allDiceSlots;
     private void Awake()
     {
-        inst = new CombatManager();
+        inst = this;
         combatContext = new CombatContext();
+        allDiceSlots = new List<DiceSlot>();
     }
-    
-    public void ValueChanage()
+
+    public void CommitSlotChanges()
     {
-        ActivateHook(CombatPhase.valueChange);
+        bool changed = false;
+        
+        foreach (var slot in allDiceSlots)
+        {
+            if (slot.ConsumeFlag())
+            {
+                changed = true;
+                (slot as ICombatContextProvider)?.ApplyTo(combatContext);
+            }
+        }
+
+        if (changed)
+        {
+            Debug.Log("adfa");
+            ActivateHook(CombatPhase.valueChange);
+        }
+    }
+    public void TurnStart()
+    {
+        ActivateHook(CombatPhase.turnStart);
     }
     public void HookRegister(ICombatHook hook)
     {
         combatHooks.Add(hook);
     }
+    public void SlotRegister(DiceSlot slot)
+    {
+        allDiceSlots.Add(slot);
+    }
     private void ActivateHook(CombatPhase phase)
     {
-        foreach (ICombatHook hook in combatHooks)
+        var executableHooks = combatHooks
+            .Where(h => h.CanExecute(phase))
+            .OrderBy(h => h.GetOrder(phase))
+            .ToList();
+
+        foreach (var hook in executableHooks)
         {
             hook.OnCombatPhase(phase, combatContext);
         }
@@ -38,10 +71,13 @@ public class CombatContext
     public List<GameObject> defenseSlotDiceList { get;  set; }
     public List<(GameObject, int)> savingSlotDiceList { get;  set; }
 
+    public int attackValue;
+    public int defenseValue;
+
 }
 public interface ICombatHook // 각 페이즈마다 컴뱃 매니저가 요청해서 함수를 실행시키는 애들이 상속하는 인터페이스
 {
-    int GetOrder();
+    int GetOrder(CombatPhase phase);
     bool CanExecute(CombatPhase phase);
     void OnCombatPhase(CombatPhase phase, CombatContext ctx);
 

@@ -5,12 +5,10 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using ue = UnityEngine;
-
 public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider
 {
     [SerializeField]
-    private int order;
-    
+    private Dictionary<CombatPhase, int> orders;    
     
     [SerializeField]
     private DiceInitValue div;
@@ -24,6 +22,15 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider
     private void Awake()
     {
         diceState = new DiceState(div); 
+        orders = new Dictionary<CombatPhase, int>();
+        orders.Add(CombatPhase.turnStart, 0);
+        orders.Add(CombatPhase.turnEnd, 0);
+    }
+
+    private void Start()
+    {
+        CombatManager.inst.HookRegister(this);
+        ApplyTo(CombatManager.inst.combatContext);
     }
     private void Update()
     {
@@ -115,9 +122,9 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider
         }
        
     }
-    public int GetOrder()
+    public int GetOrder(CombatPhase phase)
     {
-        return order;
+        return orders.TryGetValue(phase, out int order) ? order : int.MaxValue;
     }
     public bool CanExecute(CombatPhase phase)
     {

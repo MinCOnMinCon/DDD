@@ -1,28 +1,39 @@
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Data;
 using System.Security.Cryptography;
 using UnityEngine;
+using static Unity.IO.LowLevel.Unsafe.AsyncReadManagerMetrics;
 
-public class DiceSlot : MonoBehaviour
+public class DiceSlot : MonoBehaviour, ICombatContextProvider
 {
-    private List<GameObject> enteredDiceList;
-    /*private bool isDiceIn;
-    private float diceInTime; // 주사위가 들어왔을 떄 들어와서 있는 시간을 측정 (주사위를 빠르게 넣다뺐다 해서 계속 계산 함수 호출하는 거 막기 위함)
-    private float diceOutTime;*/
+    [SerializeField] private DiceSlotRole role;
+
+    protected List<GameObject> enteredDiceList;
+    protected bool isIn;
+    protected bool isOut;
+ 
 
     private void Awake()
     {
         enteredDiceList = new List<GameObject>();
-        
-        
-        
+        isIn = false;
+        isOut = false;
     }
+
+    private void Start()
+    {
+        CombatManager.inst.SlotRegister(this);
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if(collision.CompareTag("Dice"))
         {
             enteredDiceList.Add(collision.gameObject);
-            
+            isIn = true;
+
+
         }
     }
     private void OnTriggerExit2D(Collider2D collision)
@@ -30,13 +41,48 @@ public class DiceSlot : MonoBehaviour
         if (collision.CompareTag("Dice"))
         {
             enteredDiceList.Remove(collision.gameObject);
-          
+            isOut = true;
+
+
         }
     }
-   
-    public List<GameObject> GetSlotDiceList()
+    public void ApplyTo(CombatContext ctx)
     {
-        return enteredDiceList; 
+        switch (role)
+        {
+            case DiceSlotRole.Attack:
+                ctx.attackSlotDiceList = new List<GameObject>(enteredDiceList);
+                break;
+
+            case DiceSlotRole.Defense:
+                ctx.defenseSlotDiceList = new List<GameObject>(enteredDiceList);
+                break;
+
+            case DiceSlotRole.Saving:
+                // 예: (GameObject, int) 구조라면 여기서 변환
+                break;
+        }
     }
-    
+    public bool ConsumeFlag()
+    {
+        bool flag;
+        if(isIn ^ isOut)
+        {
+            flag = true;
+        }
+        else
+        {
+            flag = false;
+        }
+        isIn = false;
+        isOut = false;
+        return flag;
+
+    }
+}
+public enum DiceSlotRole
+{
+    Attack,
+    Defense,
+    Saving
 }
