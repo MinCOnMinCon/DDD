@@ -20,7 +20,10 @@ public class ComboManager : MonoBehaviour, ICombatHook
         orders[CombatPhase.valueChange] = 0;
     }
 
-    
+    private void Start()
+    {
+        CombatManager.inst.HookRegister(this);
+    }
     public int[] BuildComboSnapshot(List<DiceData> diceObjects, DiceSlotRole slotRole)
     {
         int[] eyeCounts = new int[6];

@@ -20,7 +20,7 @@ public class ValueChanger : MonoBehaviour, ICombatHook
     private void Start()
     {
         CombatManager.inst.HookRegister(this);
-    }
+    } 
     private void ApplyDiceValueToContext(List<DiceData> diceList, CombatContext ctx, DiceSlotRole slotRole)
     {
         
