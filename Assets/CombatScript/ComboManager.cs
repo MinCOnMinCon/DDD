@@ -12,9 +12,15 @@ public class ComboManager : MonoBehaviour, ICombatHook
     private List<IComboEffectRelic> effectRelics;
     private void Awake()
     {
-        
+        snapshotRelics = new List<ISnapshotRelic>();
+        conditionRelics = new List<IComboConditionRelic>();
+        effectRelics = new List<IComboEffectRelic>();
+        orders = new Dictionary<CombatPhase, int>();
+
+        orders[CombatPhase.valueChange] = 0;
     }
 
+    
     public int[] BuildComboSnapshot(List<DiceData> diceObjects, DiceSlotRole slotRole)
     {
         int[] eyeCounts = new int[6];
@@ -50,7 +56,7 @@ public class ComboManager : MonoBehaviour, ICombatHook
                 continue;
 
             ComboCandidate relicCandidate =
-                relic.GetCandidate(eyeCounts);
+                relic.Activate(eyeCounts);
 
             // 3. 더 높은 개수만 채택
             if (relicCandidate.Count > bestCandidate.Count)
@@ -88,7 +94,7 @@ public class ComboManager : MonoBehaviour, ICombatHook
 
             if (relic.MatchCandidate(candidate))
             {
-                relic.EffectApply(candidate, ctx, slotRole);
+                relic.Activate(candidate, ctx, slotRole);
                 isReplaced = true;
                 break; // 하나만 적용
             }
@@ -129,7 +135,13 @@ public class ComboManager : MonoBehaviour, ICombatHook
         }
 
     }
-    private List<DiceData> BuildDiceDataList(List<GameObject> diceList)
+
+    /// <summary>
+    /// 컴뱃 컨텍스트의 각 슬롯에 있는 주사위 오브젝트 리스트를 파라미터로 주면 각 주사위의 다이스 데이터로 리스트를 구성해 리턴
+    /// </summary>
+    /// <param name="diceList"></param>
+    /// <returns></returns>
+    private List<DiceData> BuildDiceDataList(List<GameObject> diceList) 
     {
         List<DiceData> diceDataList = new List<DiceData>();
         foreach (GameObject dice in diceList)
@@ -167,13 +179,13 @@ public interface ISnapshotRelic
 }
 public interface IComboConditionRelic 
 {
-    ComboCandidate GetCandidate(int[] eyeCounts);
+    ComboCandidate Activate(int[] eyeCounts);
     bool CanAffect(DiceSlotRole slotRole) { return true; }
 }
 
 public interface IComboEffectRelic 
 {
-    void EffectApply(ComboCandidate candidate, CombatContext ctx, DiceSlotRole slotRole);
+    void Activate(ComboCandidate candidate, CombatContext ctx, DiceSlotRole slotRole);
     bool MatchCandidate(ComboCandidate candidate);
     bool CanAffect(DiceSlotRole slotRole) { return true; }
 }
