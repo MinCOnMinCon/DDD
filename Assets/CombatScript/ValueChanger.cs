@@ -19,6 +19,7 @@ public class ValueChanger : MonoBehaviour, ICombatHook
     }
     private void Start()
     {
+        Debug.Log("dafdas");
         CombatManager.inst.HookRegister(this);
     } 
     private void ApplyDiceValueToContext(List<DiceData> diceList, CombatContext ctx, DiceSlotRole slotRole)
@@ -147,8 +148,8 @@ public class ValueChanger : MonoBehaviour, ICombatHook
         switch (phase)
         {
             case CombatPhase.valueChange:
-                var attackDiceList = BuildDiceDataList(ctx.attackSlotDiceList);
-                var defenseDiceList = BuildDiceDataList(ctx.defenseSlotDiceList);
+                var attackDiceList = DiceDataBuilder.BuildDiceDataList(ctx.attackSlotDiceList);
+                var defenseDiceList = DiceDataBuilder.BuildDiceDataList(ctx.defenseSlotDiceList);
                 ApplyDiceValueToContext(attackDiceList, ctx, DiceSlotRole.Attack);
                 ApplyDiceValueToContext(defenseDiceList, ctx, DiceSlotRole.Defense);
 
@@ -168,7 +169,7 @@ public class ValueChanger : MonoBehaviour, ICombatHook
     }
     public bool CanExecute(CombatPhase phase)
     {
-        bool canExecute = true ? phase == CombatPhase.valueChange : false;
+        bool canExecute = phase == CombatPhase.valueChange;
         return canExecute;
     }
 
@@ -177,21 +178,6 @@ public class ValueChanger : MonoBehaviour, ICombatHook
 
 
 
-
-    /// <summary>
-    /// 컴뱃 컨텍스트의 각 슬롯에 있는 주사위 오브젝트 리스트를 파라미터로 주면 각 주사위의 다이스 데이터로 리스트를 구성해 리턴
-    /// </summary>
-    /// <param name="diceList"></param>
-    /// <returns></returns>
-    private List<DiceData> BuildDiceDataList(List<GameObject> diceList)
-    {
-        List<DiceData> diceDataList = new List<DiceData>();
-        foreach (GameObject dice in diceList)
-        {
-            diceDataList.Add(dice.GetComponent<Dice>().diceData);
-        }
-        return diceDataList;
-    }
 }
 
 public interface IDiceValueChangeRelic 

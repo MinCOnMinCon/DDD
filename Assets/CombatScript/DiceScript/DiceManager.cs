@@ -36,25 +36,17 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider
     {
         if (Input.GetKeyDown(KeyCode.I))
         {
-            LoanDice();
+            ConfirmDice(diceState.basicDicePerLoan, DiceType.loan);
+        }
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            CheckDiceSpan();
         }
         if (Input.GetKeyDown(KeyCode.S))
         {
             ConfirmDice(diceState.basicDiceNum, DiceType.basic);
             ConfirmDice(diceState.penaltyDiceNum, DiceType.penalty);
         }
-    }
-    public void LoanDice()
-    {
-        List <(GameObject, int)> diceList = diceState.loanDiceList;
-        int[] weightList = diceState.loanDiceWeight;
-        for(int i =  diceState.basicDicePerLoan; i > 0; i--)
-        {
-            diceList.Add((Instantiate(dicePrefab, diceSpawnPos, Quaternion.identity), 1));
-            diceList[diceList.Count - 1].Item1.GetComponent<Dice>().DiceInit(RollDice(weightList), DiceType.loan);
-        }
-        diceState.penaltyDiceNum += diceState.curPenaltyDicePerLoan;
-        diceState.loanNum++;
     }
     public void ConfirmDice(int diceNum, DiceType type)
     {
@@ -73,6 +65,12 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider
                 diceList = diceState.penaltyDiceList;
 
                 break;
+            case DiceType.loan:
+                weightList = diceState.loanDiceWeight;
+                diceList = diceState.loanDiceList;
+                diceState.penaltyDiceNum += diceState.curPenaltyDicePerLoan;
+                diceState.curLoanNum++;
+                break;
             default:
                 weightList = null;
                 diceList = null;
@@ -80,12 +78,12 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider
         }
         
         int idx;
-        for(idx = 0; idx < diceList.Count; idx++)
+        for(idx = 0; idx < diceList.Count; idx++) // 기존에 생성된 주사위를 다시 굴림
         {
             diceList[idx].transform.localPosition = diceSpawnPos;
             diceList[idx].GetComponent<Dice>().DiceInit(RollDice(weightList), type);
         }
-        for (; idx < diceNum; idx++)
+        for (; idx < diceNum; idx++) // 기존에 주사위 수보다 늘어난 수만큼 주사위를 만들고 굴림
         {
             diceList.Add(Instantiate(dicePrefab, diceSpawnPos, Quaternion.identity));
             diceList[diceList.Count - 1].GetComponent<Dice>().DiceInit(RollDice(weightList), type);
@@ -109,6 +107,30 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider
         return 0;
     }
 
+    private void CheckDiceSpan()
+    {
+
+        List<GameObject> list = diceState.loanDiceList;
+        for (int i = list.Count - 1; i >= 0; i--)
+        {
+            if (list[i] == null) continue;
+            
+            DiceData diceData = list[i].GetComponent<Dice>().diceData;  
+            if(diceData.diceSpan > 0)
+            {
+                Debug.Log(diceData.diceSpan);
+                diceData.diceSpan--;
+                
+            }
+            else
+            {
+                GameObject dice = list[i];
+                diceState.loanDiceList.Remove(list[i]);
+                Destroy(dice);
+            }
+        }
+    }
+
     public void OnCombatPhase(CombatPhase phase, CombatContext ctx)
     {
         switch (phase)
@@ -118,6 +140,7 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider
                 ConfirmDice(diceState.penaltyDiceNum, DiceType.penalty);
                 break;
             case CombatPhase.turnEnd:
+                CheckDiceSpan();
                 break;
         }
        
@@ -128,14 +151,14 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider
     }
     public bool CanExecute(CombatPhase phase)
     {
-        bool canExecute = true ? phase == CombatPhase.turnStart || phase == CombatPhase.turnEnd: false;
+        bool canExecute = phase == CombatPhase.turnStart || phase == CombatPhase.turnEnd;
         return canExecute;
     }
     public void ApplyTo(CombatContext ctx)
     {
         ctx.diceState = diceState;
     }
-
+    
 }
 
 public class DiceState
@@ -163,7 +186,8 @@ public class DiceState
     public int basicPenaltyDicePerLoan { get; private set; } // 기본 대출 당 패널티 주사위 획득 개수
     public int curPenaltyDicePerLoan { get; set; } // 현재 대출 당 패널티 주사위 획득 개수
     public int basicDicePerLoan { get; set; } // 대출 당 주는 기본 주사위 수
-    public int loanNum { get; set; } // 이번 턴 대출 횟수
+    public int curLoanNum { get; set; } // 이번 턴 대출 횟수
+    public int loanDiceSpan { get; set; } // 대출 주사위 수명
 
     public int[] basicDiceWeight { get; set; }
     public int[] penaltyDiceWeight { get; set; }
@@ -171,7 +195,7 @@ public class DiceState
     public List<GameObject> basicDiceList { get; private set; }
     public List<GameObject> penaltyDiceList { get; private set; }
 
-    public List<(GameObject dice, int duration)> loanDiceList { get; private set; }
+    public List<GameObject> loanDiceList { get; private set; }
 
     public DiceState(DiceInitValue div)
     {
@@ -181,13 +205,14 @@ public class DiceState
         basicPenaltyDicePerLoan = div.basicPenaltyDicePerLoan;
         curPenaltyDicePerLoan = div.curPenaltyDicePerLoan;
         basicDicePerLoan = div.basicDicePerLoan;
-        loanNum = div.loanNum;
+        curLoanNum = div.loanNum;
+        loanDiceSpan = div.loanDiceSpan;
         basicDiceWeight = new int[div.diceEyeNum + 1];
         penaltyDiceWeight = new int[div.diceEyeNum + 1];
         loanDiceWeight = new int[div.diceEyeNum + 1];
         basicDiceList = new List<GameObject>();
         penaltyDiceList = new List<GameObject>();
-        loanDiceList = new List<(GameObject, int)>();
+        loanDiceList = new List<GameObject>();
 
         for (int i = div.diceEyeNum; i > 0; i--)
         {

@@ -22,6 +22,8 @@ public class ComboManager : MonoBehaviour, ICombatHook
 
     private void Start()
     {
+        Debug.Log("dafdas1");
+
         CombatManager.inst.HookRegister(this);
     }
     public int[] BuildComboSnapshot(List<DiceData> diceObjects, DiceSlotRole slotRole)
@@ -110,7 +112,8 @@ public class ComboManager : MonoBehaviour, ICombatHook
     }
     private void ApplyBaseCombo(ComboCandidate candidate, CombatContext ctx, DiceSlotRole slotRole)
     {
-        int value = candidate.Eye * candidate.Count;
+        int count = candidate.Count - 1 < 0 ? 0 : candidate.Count - 1;
+        int value = candidate.Eye * count;
         if(slotRole == DiceSlotRole.Attack)
         {
             ctx.attackValue += value;
@@ -126,8 +129,8 @@ public class ComboManager : MonoBehaviour, ICombatHook
         switch (phase)
         {
             case CombatPhase.valueChange:
-                int[] attackEyeCounts = BuildComboSnapshot(BuildDiceDataList(ctx.attackSlotDiceList), DiceSlotRole.Attack);
-                int[] defenseEyeCounts = BuildComboSnapshot(BuildDiceDataList(ctx.defenseSlotDiceList), DiceSlotRole.Defense);
+                int[] attackEyeCounts = BuildComboSnapshot(DiceDataBuilder.BuildDiceDataList(ctx.attackSlotDiceList), DiceSlotRole.Attack);
+                int[] defenseEyeCounts = BuildComboSnapshot(DiceDataBuilder.BuildDiceDataList(ctx.defenseSlotDiceList), DiceSlotRole.Defense);
 
                 ComboCandidate attackCandidate = BuildComboCandidate(attackEyeCounts, DiceSlotRole.Attack);
                 ComboCandidate defenseCandidate =  BuildComboCandidate(defenseEyeCounts, DiceSlotRole.Defense);
@@ -139,36 +142,22 @@ public class ComboManager : MonoBehaviour, ICombatHook
 
     }
 
-    /// <summary>
-    /// 컴뱃 컨텍스트의 각 슬롯에 있는 주사위 오브젝트 리스트를 파라미터로 주면 각 주사위의 다이스 데이터로 리스트를 구성해 리턴
-    /// </summary>
-    /// <param name="diceList"></param>
-    /// <returns></returns>
-    private List<DiceData> BuildDiceDataList(List<GameObject> diceList) 
-    {
-        List<DiceData> diceDataList = new List<DiceData>();
-        foreach (GameObject dice in diceList)
-        {
-           diceDataList.Add(dice.GetComponent<Dice>().diceData);
-        }
-        return diceDataList;
-    }
     public int GetOrder(CombatPhase phase)
     {
         return orders.TryGetValue(phase, out int order) ? order : int.MaxValue;
     }
     public bool CanExecute(CombatPhase phase)
     {
-        bool canExecute = true ? phase == CombatPhase.valueChange : false;
+        bool canExecute = phase == CombatPhase.valueChange;
         return canExecute;
     }
 }
 
 public struct ComboCandidate
 {
-    public int Eye;    // 1~6
+    public int Eye;// 1~6
     public int Count;
-
+   
     public ComboCandidate(int eye, int count)
     {
         Eye = eye;

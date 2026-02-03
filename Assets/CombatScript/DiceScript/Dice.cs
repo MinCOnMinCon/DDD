@@ -39,7 +39,14 @@ public class Dice : MonoBehaviour
         diceRigidbody.angularVelocity = 0;
         diceRigidbody.linearVelocity = Vector2.zero;
         ClearEyes();
-        diceData = new DiceData(eye, type);
+        if(type == DiceType.loan)
+        {
+            diceData = new DiceData(eye, type, CombatManager.inst.combatContext.diceState.loanDiceSpan);
+        }
+        else
+        {
+            diceData = new DiceData(eye, type, int.MaxValue);
+        }
         SetType(type);
         SpawnEyes(eye);
        
@@ -81,7 +88,6 @@ public class Dice : MonoBehaviour
             diceRigidbody.linearVelocityX = (curFramePos.x - prevFramePos.x) / (Time.deltaTime * throwingSpeed);
             diceRigidbody.linearVelocityY = (curFramePos.y - prevFramePos.y) / (Time.deltaTime * throwingSpeed);
             //Debug.Log(diceRigidbody.linearVelocity + "rear");
-            CombatManager.inst.CommitSlotChanges();
         }
 
         if (isCursorIn)
@@ -201,15 +207,17 @@ public class Dice : MonoBehaviour
 
 public class DiceData
 {
-    public DiceData(int eye, DiceType type)
+    public DiceData(int eye, DiceType type, int span)
     {
         diceEye = eye;
         diceValue = eye;
         diceType = type;
-        
+        diceSpan = span;
     }
 
     public int diceEye { get; private set; }
     public int diceValue { get; set; }
     public DiceType diceType { get; private set; }
+
+    public int diceSpan;
 }

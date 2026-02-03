@@ -11,4 +11,5 @@ public class DiceInitValue : ScriptableObject
     public int basicDicePerLoan = 2;
     public int loanNum = 0;
     public int diceEyeNum = 6; // n 면 주사위 -> 현재는 6면
+    public int loanDiceSpan = 2;
 }

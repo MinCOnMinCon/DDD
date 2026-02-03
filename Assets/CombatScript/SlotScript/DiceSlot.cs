@@ -24,6 +24,7 @@ public class DiceSlot : MonoBehaviour, ICombatContextProvider
     private void Start()
     {
         CombatManager.inst.SlotRegister(this);
+        ApplyTo(CombatManager.inst.combatContext);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -32,6 +33,12 @@ public class DiceSlot : MonoBehaviour, ICombatContextProvider
         {
             enteredDiceList.Add(collision.gameObject);
             isIn = true;
+            if(role == DiceSlotRole.Saving)
+            {
+               ApplyTo(CombatManager.inst.combatContext);
+            }
+            CombatManager.inst.CommitSlotChanges();
+
 
 
         }
@@ -42,6 +49,12 @@ public class DiceSlot : MonoBehaviour, ICombatContextProvider
         {
             enteredDiceList.Remove(collision.gameObject);
             isOut = true;
+            if (role == DiceSlotRole.Saving)
+            {
+                ApplyTo(CombatManager.inst.combatContext);
+            }
+            CombatManager.inst.CommitSlotChanges();
+
 
 
         }
@@ -59,10 +72,10 @@ public class DiceSlot : MonoBehaviour, ICombatContextProvider
                 break;
 
             case DiceSlotRole.Saving:
-                // 예: (GameObject, int) 구조라면 여기서 변환
+                ctx.savingSlotDiceList = new List<GameObject>(enteredDiceList);
                 break;
         }
-    }
+    } // ctx에 존재하는 diceSlotlist는 최초 호출 시 적어도 하나는 null 상태다. 왜냐하면 
     public bool ConsumeFlag()
     {
         bool flag;

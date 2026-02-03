@@ -12,7 +12,7 @@ public class AttackValueViewer : ValueViewer
         switch (phase)
         {
             case CombatPhase.valueChange:
-                Debug.Log("AAA");
+                
                 tmp.text = ctx.attackValue.ToString();
                 break;
         }

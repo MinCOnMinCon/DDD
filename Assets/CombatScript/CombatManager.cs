@@ -34,9 +34,13 @@ public class CombatManager : MonoBehaviour
         if (changed)
         {
             Debug.Log("adfa");
+            combatContext.attackValue = 0;
+            combatContext.defenseValue = 0;
             ActivateHook(CombatPhase.valueChange);
         }
     }
+
+
     public void TurnStart()
     {
         ActivateHook(CombatPhase.turnStart);
@@ -69,11 +73,12 @@ public class CombatContext
 
     public List<GameObject> attackSlotDiceList { get;  set; }
     public List<GameObject> defenseSlotDiceList { get;  set; }
-    public List<(GameObject, int)> savingSlotDiceList { get;  set; }
-
+    public List<GameObject> savingSlotDiceList { get;  set; }
+    
     public int attackValue;
     public int defenseValue;
 
+    
 }
 public interface ICombatHook // 각 페이즈마다 컴뱃 매니저가 요청해서 함수를 실행시키는 애들이 상속하는 인터페이스
 {
