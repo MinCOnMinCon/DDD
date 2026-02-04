@@ -22,8 +22,26 @@ public class ComboManager : MonoBehaviour, ICombatHook
 
     private void Start()
     {
-        Debug.Log("dafdas1");
 
+        Initialize();
+
+
+    }
+
+    private void Initialize()
+    {
+        foreach (var effect in RelicManager.inst.GetRelicEffects<ISnapshotRelic>())
+        {
+            snapshotRelics.Add(effect);
+        }
+        foreach (var effect in RelicManager.inst.GetRelicEffects<IComboConditionRelic>())
+        {
+            conditionRelics.Add(effect);
+        }
+        foreach (var effect in RelicManager.inst.GetRelicEffects<IComboEffectRelic>())
+        {
+            effectRelics.Add(effect);
+        }
         CombatManager.inst.HookRegister(this);
     }
     public int[] BuildComboSnapshot(List<DiceData> diceObjects, DiceSlotRole slotRole)
@@ -164,20 +182,17 @@ public struct ComboCandidate
         Count = count;
     }
 }
-public interface ISnapshotRelic 
+public interface ISnapshotRelic : IRelicEffect
 {
     void Activate(DiceData dice, int[] eyeCoutns);
-    bool CanAffect(DiceSlotRole slotRole) { return true; }
 }
-public interface IComboConditionRelic 
+public interface IComboConditionRelic : IRelicEffect
 {
     ComboCandidate Activate(int[] eyeCounts);
-    bool CanAffect(DiceSlotRole slotRole) { return true; }
 }
 
-public interface IComboEffectRelic 
+public interface IComboEffectRelic : IRelicEffect
 {
     void Activate(ComboCandidate candidate, CombatContext ctx, DiceSlotRole slotRole);
     bool MatchCandidate(ComboCandidate candidate);
-    bool CanAffect(DiceSlotRole slotRole) { return true; }
 }

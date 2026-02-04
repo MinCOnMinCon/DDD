@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class ValueChanger : MonoBehaviour, ICombatHook
@@ -19,9 +20,25 @@ public class ValueChanger : MonoBehaviour, ICombatHook
     }
     private void Start()
     {
-        Debug.Log("dafdas");
-        CombatManager.inst.HookRegister(this);
+        Initialize();
     } 
+    private void Initialize()
+    {
+        foreach (var effect in RelicManager.inst.GetRelicEffects<IDiceValueChangeRelic>())
+        {
+            valueChangeRelics.Add(effect);
+        }
+        foreach (var effect in RelicManager.inst.GetRelicEffects<ISnapshotConditionRelic>())
+        {
+            conditionRelics.Add(effect);
+        }
+        foreach (var effect in RelicManager.inst.GetRelicEffects<IFinalValueRelic>())
+        {
+            finalValueRelics.Add(effect);
+        }
+        CombatManager.inst.HookRegister(this);
+
+    }
     private void ApplyDiceValueToContext(List<DiceData> diceList, CombatContext ctx, DiceSlotRole slotRole)
     {
         
@@ -180,17 +197,15 @@ public class ValueChanger : MonoBehaviour, ICombatHook
 
 }
 
-public interface IDiceValueChangeRelic 
+public interface IDiceValueChangeRelic : IRelicEffect
 {
     void Activate(DiceData dice);
-    bool CanAffect(DiceSlotRole slotRole) { return true; }
 }
-interface ISnapshotConditionRelic
+interface ISnapshotConditionRelic : IRelicEffect
 {
-    bool CanAffect(DiceSlotRole slotRole) { return true; }
     int Activate(SlotSnapshot snapshot, CombatContext ctx);
 }
-interface IFinalValueRelic
+interface IFinalValueRelic : IRelicEffect
 {
     void Activate(CombatContext ctx);
 }

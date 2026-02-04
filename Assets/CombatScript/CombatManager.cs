@@ -33,9 +33,9 @@ public class CombatManager : MonoBehaviour
 
         if (changed)
         {
-            Debug.Log("adfa");
+           
             combatContext.attackValue = 0;
-            combatContext.defenseValue = 0;
+            combatContext.defenseValue = 0; // 이 두줄 나중에 담당 클래스에다가 맡기고 OnCombatPhase로 값 초기화
             ActivateHook(CombatPhase.valueChange);
         }
     }
@@ -77,7 +77,14 @@ public class CombatContext
     
     public int attackValue;
     public int defenseValue;
+    public int turnCount;
 
+    public CombatContext()
+    {
+        attackValue = 0;
+        defenseValue = 0;
+        turnCount = 1;
+    }
     
 }
 public interface ICombatHook // 각 페이즈마다 컴뱃 매니저가 요청해서 함수를 실행시키는 애들이 상속하는 인터페이스

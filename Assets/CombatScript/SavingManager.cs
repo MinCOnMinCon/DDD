@@ -6,21 +6,36 @@ using UnityEngine;
 public class SavingManager : MonoBehaviour, ICombatHook
 {
     private Dictionary<CombatPhase, int> orders;
-    private List<ISingleDiceRelic> singleList;
-    private List<IMultiDiceRelic> multiList;
+    private List<ISingleDiceRelic> singleRelics;
+    private List<IMultiDiceRelic> multiRelics;
     [SerializeField]
     private int maxSavingValue = 20;
     private void Awake()
     {
         orders = new Dictionary<CombatPhase, int>();
-        singleList = new List<ISingleDiceRelic>();
-        multiList = new List<IMultiDiceRelic>();
+        singleRelics = new List<ISingleDiceRelic>();
+        multiRelics = new List<IMultiDiceRelic>();
         orders[CombatPhase.turnEnd] = 0;
+    }
+    private void Start()
+    {
+        Initialize();
+    }
+    private void Initialize()
+    {
+        foreach (var effect in RelicManager.inst.GetRelicEffects<ISingleDiceRelic>())
+        {
+            singleRelics.Add(effect);
+        }
+        foreach (var effect in RelicManager.inst.GetRelicEffects<IMultiDiceRelic>())
+        {
+            multiRelics.Add(effect);
+        }
+  
+        CombatManager.inst.HookRegister(this);
     }
 
 
-
-    
     public void OnCombatPhase(CombatPhase phase, CombatContext ctx)
     {
         switch (phase)
@@ -48,14 +63,14 @@ public class SavingManager : MonoBehaviour, ICombatHook
 
     private void ActivateSingleRelics(DiceData diceData)
     {
-        foreach(var relic in singleList)
+        foreach(var relic in singleRelics)
         {
             relic.Activate(diceData); 
         }
     }
     private void EvaluateMultiDice(SavingSnapshot snapshot)
     {
-        foreach(var relic in multiList)
+        foreach(var relic in multiRelics)
         {
             relic.Activate(snapshot);
         }
@@ -111,11 +126,11 @@ public class SavingSnapshot
         return (true, type);
     }
 }
-public interface ISingleDiceRelic //한개의 주사위를 조건으로 하는 유물
+public interface ISingleDiceRelic : IRelicEffect //한개의 주사위를 조건으로 하는 유물
 {
     void Activate(DiceData dice);
 }
-public interface IMultiDiceRelic //여러 개의 주사위를 조건으로 하는 유물
+public interface IMultiDiceRelic : IRelicEffect//여러 개의 주사위를 조건으로 하는 유물
 {
     void Activate(SavingSnapshot snapshot);
 }
