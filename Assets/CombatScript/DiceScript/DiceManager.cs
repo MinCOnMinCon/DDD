@@ -11,7 +11,7 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider
     private Dictionary<CombatPhase, int> orders;    
     
     [SerializeField]
-    private DiceInitValue div;
+    private DiceInitValue div; // 비전투일 때의 diceManager의 데이터. 전투가 시작되면 div로 diceState를 생성해 전투에서 사용되는 스냅샷을 만든다.
 
     private DiceState diceState;
 

@@ -34,8 +34,8 @@ public class CombatManager : MonoBehaviour
         if (changed)
         {
            
-            combatContext.attackValue = 0;
-            combatContext.defenseValue = 0; // 이 두줄 나중에 담당 클래스에다가 맡기고 OnCombatPhase로 값 초기화
+            combatContext.calcAttackValue = 0;
+            combatContext.calcDefenseValue = 0; // 이 두줄 나중에 담당 클래스에다가 맡기고 OnCombatPhase로 값 초기화
             ActivateHook(CombatPhase.valueChange);
         }
     }
@@ -74,15 +74,20 @@ public class CombatContext
     public List<GameObject> attackSlotDiceList { get;  set; }
     public List<GameObject> defenseSlotDiceList { get;  set; }
     public List<GameObject> savingSlotDiceList { get;  set; }
-    
-    public int attackValue;
-    public int defenseValue;
+
+    public int baseAttackValue;
+    public int baseDefenseValue;
+    public int calcAttackValue;
+    public int calcDefenseValue;
     public int turnCount;
 
     public CombatContext()
     {
-        attackValue = 0;
-        defenseValue = 0;
+        baseAttackValue = 0;
+        baseDefenseValue = 0;
+        baseDefenseValue = 0;
+        calcAttackValue = 0;
+        calcDefenseValue = 0;
         turnCount = 1;
     }
     

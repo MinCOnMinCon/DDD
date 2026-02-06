@@ -13,7 +13,7 @@ public class AttackValueViewer : ValueViewer
         {
             case CombatPhase.valueChange:
                 
-                tmp.text = ctx.attackValue.ToString();
+                tmp.text = (ctx.calcAttackValue + ctx.baseAttackValue).ToString();
                 break;
         }
     }

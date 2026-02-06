@@ -13,7 +13,7 @@ public class DefenseValueViewer : ValueViewer
         switch (phase)
         {
             case CombatPhase.valueChange:
-                tmp.text = ctx.defenseValue.ToString();
+                tmp.text = (ctx.calcDefenseValue + ctx.baseDefenseValue).ToString();
                 break;
         }
     }

@@ -134,11 +134,11 @@ public class ComboManager : MonoBehaviour, ICombatHook
         int value = candidate.Eye * count;
         if(slotRole == DiceSlotRole.Attack)
         {
-            ctx.attackValue += value;
+            ctx.calcAttackValue += value;
         }
         if(slotRole == DiceSlotRole.Defense)
         {
-            ctx.defenseValue += value;
+            ctx.calcDefenseValue += value;
         }
     }
 

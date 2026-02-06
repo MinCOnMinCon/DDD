@@ -64,11 +64,11 @@ public class ValueChanger : MonoBehaviour, ICombatHook
             switch (slotRole)
             {
             case DiceSlotRole.Attack:
-                ctx.attackValue += sum;
+                ctx.calcAttackValue += sum;
                 break;
 
             case DiceSlotRole.Defense:
-                ctx.defenseValue += sum;
+                ctx.calcDefenseValue += sum;
                 break;
 
             }
