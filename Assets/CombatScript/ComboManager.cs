@@ -2,19 +2,16 @@ using System.Collections.Generic;
 using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
 using static UnityEditor.Timeline.TimelinePlaybackControls;
+using System.Linq;
 
 public class ComboManager : MonoBehaviour, ICombatHook
 {
     [SerializeField]
     private Dictionary<CombatPhase, int> orders;
-    private List<ISnapshotRelic> snapshotRelics;
-    private List<IComboConditionRelic> conditionRelics;
-    private List<IComboEffectRelic> effectRelics;
+    private List<IComboRelic> comboRelicList;
     private void Awake()
     {
-        snapshotRelics = new List<ISnapshotRelic>();
-        conditionRelics = new List<IComboConditionRelic>();
-        effectRelics = new List<IComboEffectRelic>();
+        comboRelicList = new List<IComboRelic>();
         orders = new Dictionary<CombatPhase, int>();
 
         orders[CombatPhase.valueChange] = 0;
@@ -30,35 +27,41 @@ public class ComboManager : MonoBehaviour, ICombatHook
 
     private void Initialize()
     {
-        foreach (var effect in RelicManager.inst.GetRelicEffects<ISnapshotRelic>())
+        foreach (var effect in RelicManager.inst.GetRelicEffects<IComboRelic>())
         {
-            snapshotRelics.Add(effect);
+            comboRelicList.Add(effect);
         }
-        foreach (var effect in RelicManager.inst.GetRelicEffects<IComboConditionRelic>())
-        {
-            conditionRelics.Add(effect);
-        }
-        foreach (var effect in RelicManager.inst.GetRelicEffects<IComboEffectRelic>())
-        {
-            effectRelics.Add(effect);
-        }
+        
         CombatManager.inst.HookRegister(this);
     }
-    public int[] BuildComboSnapshot(List<DiceData> diceObjects, DiceSlotRole slotRole)
+    public int[] BuildComboSnapshot(ComboContext ctx)
     {
         int[] eyeCounts = new int[6];
+        List<DiceData> diceObjects;
+        switch (ctx.slotRole)
+        {
+            case DiceSlotRole.Attack:
+                diceObjects = ctx.combatCtx.snapshot.attackDice;
+                break;
+            case DiceSlotRole.Defense:
+                diceObjects = ctx.combatCtx.snapshot.defenseDice;
+                break;
+            default:
+                diceObjects = null;
+                break;
+        }
         foreach (var dice in diceObjects)
         { 
             // 1. 기본 눈 반영
             eyeCounts[dice.diceEye - 1]++;
-
+            var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.CandidateModify);
             // 2. 복사본 제작에 관여하는 유물 처리
-            foreach (var relic in snapshotRelics)
+            foreach (var relic in stageRelics)
             {
-                if (!relic.CanAffect(slotRole))
+                if (!relic.CanAffect(ctx.slotRole))
                     continue;
 
-                relic.Activate(dice, eyeCounts);
+                relic.Activate(ctx);
                     
             }
         }
@@ -67,24 +70,24 @@ public class ComboManager : MonoBehaviour, ICombatHook
     }
 
     
-    public ComboCandidate BuildComboCandidate(int[] eyeCounts,DiceSlotRole slotRole)
+    public ComboCandidate BuildComboCandidate(ComboContext ctx)
     {
         // 1. 기본 콤보 후보 선정
-        ComboCandidate bestCandidate = GetBaseCandidate(eyeCounts);
+        ComboCandidate bestCandidate = GetBaseCandidate(ctx.eyeCounts);
 
+        var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.CandidateModify);
         // 2. 콤보 관여 유물 적용
-        foreach (var relic in conditionRelics)
+        foreach (var relic in stageRelics)
         {
-            if (!relic.CanAffect(slotRole))
+            if (!relic.CanAffect(ctx.slotRole))
                 continue;
 
-            ComboCandidate relicCandidate =
-                relic.Activate(eyeCounts);
+            relic.Activate(ctx);
 
             // 3. 더 높은 개수만 채택
-            if (relicCandidate.Count > bestCandidate.Count)
+            if (ctx.candidate.Count > bestCandidate.Count)
             {
-                bestCandidate = relicCandidate;
+                bestCandidate = ctx.candidate;
             }
         }
 
@@ -106,39 +109,38 @@ public class ComboManager : MonoBehaviour, ICombatHook
 
         return new ComboCandidate(bestEye, bestCount);
     }
-    public void ApplyComboEffect(ComboCandidate candidate, DiceSlotRole slotRole,CombatContext ctx)
+    public void ApplyComboEffect(ComboContext ctx)
     {
         bool isReplaced = false;
-
-        foreach (var relic in effectRelics)
+        var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.CandidateModify);
+        foreach (var relic in stageRelics)
         {
-            if (!relic.CanAffect(slotRole))
+            if (!relic.CanAffect(ctx.slotRole))
                 continue;
 
-            if (relic.MatchCandidate(candidate))
-            {
-                relic.Activate(candidate, ctx, slotRole);
-                isReplaced = true;
-                break; // 하나만 적용
-            }
+            
+            relic.Activate(ctx);
+            isReplaced = true;
+            break; // 하나만 적용
+            
         }
 
         if (!isReplaced)
         {
-            ApplyBaseCombo(candidate, ctx, slotRole);
+            ApplyBaseCombo(ctx);
         }
     }
-    private void ApplyBaseCombo(ComboCandidate candidate, CombatContext ctx, DiceSlotRole slotRole)
+    private void ApplyBaseCombo(ComboContext ctx)
     {
-        int count = candidate.Count - 1 < 0 ? 0 : candidate.Count - 1;
-        int value = candidate.Eye * count;
-        if(slotRole == DiceSlotRole.Attack)
+        int count = ctx.candidate.Count - 1 < 0 ? 0 : ctx.candidate.Count - 1;
+        int value = ctx.candidate.Eye * count;
+        if(ctx.slotRole == DiceSlotRole.Attack)
         {
-            ctx.calcAttackValue += value;
+            ctx.combatCtx.snapshot.calcAttackValue += value;
         }
-        if(slotRole == DiceSlotRole.Defense)
+        if(ctx.slotRole == DiceSlotRole.Defense)
         {
-            ctx.calcDefenseValue += value;
+            ctx.combatCtx.snapshot.calcDefenseValue += value;
         }
     }
 
@@ -147,14 +149,17 @@ public class ComboManager : MonoBehaviour, ICombatHook
         switch (phase)
         {
             case CombatPhase.valueChange:
-                int[] attackEyeCounts = BuildComboSnapshot(DiceDataBuilder.BuildDiceDataList(ctx.attackSlotDiceList), DiceSlotRole.Attack);
-                int[] defenseEyeCounts = BuildComboSnapshot(DiceDataBuilder.BuildDiceDataList(ctx.defenseSlotDiceList), DiceSlotRole.Defense);
+                ComboContext attackCtx = new ComboContext(DiceSlotRole.Attack, ctx);
+                ComboContext defenseCtx = new ComboContext(DiceSlotRole.Defense, ctx);
 
-                ComboCandidate attackCandidate = BuildComboCandidate(attackEyeCounts, DiceSlotRole.Attack);
-                ComboCandidate defenseCandidate =  BuildComboCandidate(defenseEyeCounts, DiceSlotRole.Defense);
+                attackCtx.eyeCounts = BuildComboSnapshot(attackCtx);
+                defenseCtx.eyeCounts = BuildComboSnapshot(defenseCtx);
 
-                ApplyComboEffect(attackCandidate, DiceSlotRole.Attack, ctx);
-                ApplyComboEffect(defenseCandidate, DiceSlotRole.Defense, ctx);
+                attackCtx.candidate = BuildComboCandidate(attackCtx);
+                defenseCtx.candidate =  BuildComboCandidate(defenseCtx);
+
+                ApplyComboEffect(attackCtx);
+                ApplyComboEffect(defenseCtx);
                 break;
         }
 
@@ -171,28 +176,46 @@ public class ComboManager : MonoBehaviour, ICombatHook
     }
 }
 
+
+
+public interface IComboRelic : IRelicEffect
+{
+    ComboStage Stage { get; }
+    
+    void Activate(ComboContext ctx);
+    
+}
+public class ComboContext
+{
+    public DiceSlotRole slotRole;
+    public CombatContext combatCtx;
+
+    public int[] eyeCounts;
+
+    public ComboCandidate candidate;
+    public ComboContext(DiceSlotRole role , CombatContext combatCtx)
+    {
+        this.slotRole = role;
+        this.combatCtx = combatCtx;
+    }
+}
 public struct ComboCandidate
 {
     public int Eye;// 1~6
     public int Count;
-   
+
     public ComboCandidate(int eye, int count)
     {
         Eye = eye;
         Count = count;
     }
 }
-public interface ISnapshotRelic : IRelicEffect
+public enum ComboStage
 {
-    void Activate(DiceData dice, int[] eyeCoutns);
-}
-public interface IComboConditionRelic : IRelicEffect
-{
-    ComboCandidate Activate(int[] eyeCounts);
+    CreateSnapshot,
+    BuildCandidate,
+    CandidateModify,
+    EffectApply
 }
 
-public interface IComboEffectRelic : IRelicEffect
-{
-    void Activate(ComboCandidate candidate, CombatContext ctx, DiceSlotRole slotRole);
-    bool MatchCandidate(ComboCandidate candidate);
-}
+

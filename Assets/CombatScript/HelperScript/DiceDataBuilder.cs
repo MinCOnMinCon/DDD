@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class DiceDataBuilder
+public class DiceDataBuilder : MonoBehaviour
 {
     /// <summary>
     /// 컴뱃 컨텍스트의 각 슬롯에 있는 주사위 오브젝트 리스트를 파라미터로 주면 

@@ -64,11 +64,11 @@ public class ValueChanger : MonoBehaviour, ICombatHook
             switch (slotRole)
             {
             case DiceSlotRole.Attack:
-                ctx.calcAttackValue += sum;
+                ctx.snapshot.calcAttackValue += sum;
                 break;
 
             case DiceSlotRole.Defense:
-                ctx.calcDefenseValue += sum;
+                ctx.snapshot.calcDefenseValue += sum;
                 break;
 
             }
@@ -165,8 +165,8 @@ public class ValueChanger : MonoBehaviour, ICombatHook
         switch (phase)
         {
             case CombatPhase.valueChange:
-                var attackDiceList = DiceDataBuilder.BuildDiceDataList(ctx.attackSlotDiceList);
-                var defenseDiceList = DiceDataBuilder.BuildDiceDataList(ctx.defenseSlotDiceList);
+                var attackDiceList = ctx.snapshot.attackDice;
+                var defenseDiceList = ctx.snapshot.defenseDice;
                 ApplyDiceValueToContext(attackDiceList, ctx, DiceSlotRole.Attack);
                 ApplyDiceValueToContext(defenseDiceList, ctx, DiceSlotRole.Defense);
 

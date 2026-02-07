@@ -74,7 +74,7 @@ public class Relic_4 : RelicEffect, ISnapshotConditionRelic
     {
         if (ctx.turnCount == 1 && snapshot.slotRole == DiceSlotRole.Attack)
         {
-            ctx.calcAttackValue += 8;
+            ctx.snapshot.calcAttackValue += 8;
         }
         return 0;
     }
@@ -90,7 +90,7 @@ public class Relic_10 : RelicEffect, ISnapshotConditionRelic
         if (snapshot.slotRole == DiceSlotRole.Defense &&
             snapshot.totalDiceCount == 0)
         {
-            ctx.calcAttackValue += 10;
+            ctx.snapshot.calcAttackValue += 10;
         }
         return 0;
     }
@@ -108,9 +108,9 @@ public class Relic_11 : RelicEffect, ISnapshotConditionRelic
             int bonus = snapshot.basicDiceCount + snapshot.loanDiceCount;
 
             if (snapshot.slotRole == DiceSlotRole.Attack)
-                ctx.calcAttackValue += bonus;
+                ctx.snapshot.calcAttackValue += bonus;
             else if (snapshot.slotRole == DiceSlotRole.Defense)
-                ctx.calcDefenseValue += bonus;
+                ctx.snapshot.calcDefenseValue += bonus;
         }
         return 0;
     }
@@ -130,9 +130,9 @@ public class Relic_20 : RelicEffect, ISnapshotConditionRelic
         }
 
         if (snapshot.slotRole == DiceSlotRole.Attack)
-            ctx.calcAttackValue *= 2;
+            ctx.snapshot.calcAttackValue *= 2;
         else if (snapshot.slotRole == DiceSlotRole.Defense)
-            ctx.calcDefenseValue *= 2;
+            ctx.snapshot.calcDefenseValue *= 2;
 
         return 0;
     }
@@ -151,9 +151,9 @@ public class Relic_28 : RelicEffect, ISnapshotConditionRelic
         int bonus = eye.totalCount * 4;
 
         if (snapshot.slotRole == DiceSlotRole.Attack)
-            ctx.calcAttackValue += bonus;
+            ctx.snapshot.calcAttackValue += bonus;
         else if (snapshot.slotRole == DiceSlotRole.Defense)
-            ctx.calcDefenseValue += bonus;
+            ctx.snapshot.calcDefenseValue += bonus;
 
         return 0;
     }
@@ -170,7 +170,7 @@ public class Relic_26 : RelicEffect, IFinalValueRelic
 
     public void Activate(CombatContext ctx)
     {
-        ctx.calcAttackValue += ctx.attackSlotDiceList.Count * 4;
+        ctx.snapshot.calcAttackValue += ctx.attackSlotDiceList.Count * 4;
     }
 }
 
@@ -181,7 +181,7 @@ public class Relic_29 : RelicEffect, IFinalValueRelic
 
     public void Activate(CombatContext ctx)
     {
-        ctx.calcAttackValue += ctx.calcDefenseValue / 3;
+        ctx.snapshot.calcAttackValue += ctx.snapshot.calcDefenseValue / 3;
     }
 }
 

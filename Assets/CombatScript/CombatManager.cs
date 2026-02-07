@@ -34,9 +34,9 @@ public class CombatManager : MonoBehaviour
         if (changed)
         {
            
-            combatContext.calcAttackValue = 0;
-            combatContext.calcDefenseValue = 0; // 이 두줄 나중에 담당 클래스에다가 맡기고 OnCombatPhase로 값 초기화
+            combatContext.snapshot = CombatContextSnapshotFactory.Create(combatContext);
             ActivateHook(CombatPhase.valueChange);
+            combatContext.snapshot = null;
         }
     }
 
@@ -77,21 +77,74 @@ public class CombatContext
 
     public int baseAttackValue;
     public int baseDefenseValue;
-    public int calcAttackValue;
-    public int calcDefenseValue;
     public int turnCount;
+
+    public CombatContextSnapshot snapshot { get; set; }
 
     public CombatContext()
     {
         baseAttackValue = 0;
         baseDefenseValue = 0;
         baseDefenseValue = 0;
-        calcAttackValue = 0;
-        calcDefenseValue = 0;
+      
         turnCount = 1;
     }
     
 }
+
+public class CombatContextSnapshot
+{
+    // ===== HP =====
+    public int currentHp;
+    public int maxHp;
+
+    // ===== Base Values (전투 시작 기준) =====
+    public int baseAttackValue;
+    public int baseDefenseValue;
+
+    // ===== Calculated Values (valueChange 전용) =====
+    public int calcAttackValue;
+    public int calcDefenseValue;
+
+    // ===== Slot Dice (복사본 DiceData) =====
+    public List<DiceData> attackDice;
+    public List<DiceData> defenseDice;
+    public List<DiceData> saveDice;
+
+    // ===== Dice Counts =====
+    public int basicDiceCount;
+    public int penaltyDiceCount;
+    public int loanDiceCount;
+
+    public int turnCount;
+}
+public static class CombatContextSnapshotFactory
+{
+    public static CombatContextSnapshot Create(CombatContext ctx)
+    {
+        return new CombatContextSnapshot
+        {
+            currentHp = ctx.playerState.hp,
+
+            baseAttackValue = ctx.baseAttackValue,
+            baseDefenseValue = ctx.baseDefenseValue,
+
+            calcAttackValue = 0,
+            calcDefenseValue = 0,
+
+            attackDice = DiceDataBuilder.BuildDiceDataList(ctx.attackSlotDiceList),
+            defenseDice = DiceDataBuilder.BuildDiceDataList(ctx.defenseSlotDiceList),
+            saveDice = DiceDataBuilder.BuildDiceDataList(ctx.savingSlotDiceList),
+
+            basicDiceCount = ctx.diceState.basicDiceNum,
+            penaltyDiceCount = ctx.diceState.penaltyDiceNum,
+            loanDiceCount = ctx.diceState.loanDiceNum,
+
+            turnCount = ctx.turnCount
+        };
+    }
+}
+
 public interface ICombatHook // 각 페이즈마다 컴뱃 매니저가 요청해서 함수를 실행시키는 애들이 상속하는 인터페이스
 {
     int GetOrder(CombatPhase phase);
