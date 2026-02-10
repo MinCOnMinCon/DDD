@@ -2,19 +2,18 @@
 
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class SavingManager : MonoBehaviour, ICombatHook
 {
     private Dictionary<CombatPhase, int> orders;
-    private List<ISingleDiceRelic> singleRelics;
-    private List<IMultiDiceRelic> multiRelics;
+    private List<ISavingRelic> savingRelicList;
     [SerializeField]
     private int maxSavingValue = 20;
     private void Awake()
     {
         orders = new Dictionary<CombatPhase, int>();
-        singleRelics = new List<ISingleDiceRelic>();
-        multiRelics = new List<IMultiDiceRelic>();
+        savingRelicList = new List<ISavingRelic>();
         orders[CombatPhase.turnEnd] = 0;
     }
     private void Start()
@@ -23,14 +22,11 @@ public class SavingManager : MonoBehaviour, ICombatHook
     }
     private void Initialize()
     {
-        foreach (var effect in RelicManager.inst.GetRelicEffects<ISingleDiceRelic>())
+        foreach (var effect in RelicManager.inst.GetRelicEffects<ISavingRelic>())
         {
-            singleRelics.Add(effect);
+            savingRelicList.Add(effect);
         }
-        foreach (var effect in RelicManager.inst.GetRelicEffects<IMultiDiceRelic>())
-        {
-            multiRelics.Add(effect);
-        }
+      
   
         CombatManager.inst.HookRegister(this);
     }
@@ -41,38 +37,41 @@ public class SavingManager : MonoBehaviour, ICombatHook
         switch (phase)
         {
             case CombatPhase.turnEnd:
-                List<DiceData> diceList = DiceDataBuilder.BuildDiceDataList(ctx.savingSlotDiceList);
-                EvaluateSingleDice(diceList);
-                SavingSnapshot snapshot = new SavingSnapshot(diceList);
-                EvaluateMultiDice(snapshot);
+                SavingContext savingContext = new SavingContext(ctx, DiceDataBuilder.BuildDiceDataList(ctx.savingSlotDiceList));
+                EvaluateSingleDice(savingContext);
+                savingContext.savingSnapshot = new SavingSnapshot(savingContext.diceList);
+                EvaluateMultiDice(savingContext);
                 break;
 
         }
     }
-    private void EvaluateSingleDice(List<DiceData> diceDataList)
+    private void EvaluateSingleDice(SavingContext ctx)
     {
 
 
-        foreach (var diceData in diceDataList)
+        foreach (var diceData in ctx.diceList)
         {
             int doubledValue = diceData.diceValue * 2;
             diceData.diceValue = Mathf.Min(diceData.diceValue * 2, maxSavingValue);
-            ActivateSingleRelics(diceData);
+            ctx.dice = diceData;
+            ActivateSingleRelics(ctx);
         }
     }
 
-    private void ActivateSingleRelics(DiceData diceData)
+    private void ActivateSingleRelics(SavingContext ctx)
     {
-        foreach(var relic in singleRelics)
+        var stageRelics = savingRelicList.Where(r => r.Stage == SavingStage.SingleDice);
+        foreach (var relic in stageRelics)
         {
-            relic.Activate(diceData); 
+            relic.Activate(ctx);
         }
     }
-    private void EvaluateMultiDice(SavingSnapshot snapshot)
+    private void EvaluateMultiDice(SavingContext ctx)
     {
-        foreach(var relic in multiRelics)
+        var stageRelics = savingRelicList.Where(r => r.Stage == SavingStage.MultiDice);
+        foreach (var relic in stageRelics)
         {
-            relic.Activate(snapshot);
+            relic.Activate(ctx);
         }
     }
     public bool CanExecute(CombatPhase phase)
@@ -86,6 +85,30 @@ public class SavingManager : MonoBehaviour, ICombatHook
     }
     
 }
+
+public class SavingContext
+{
+    public CombatContext combatContext { get; }
+    public SavingSnapshot savingSnapshot;
+    public List<DiceData> diceList;
+
+    // SingleDice용
+    public DiceData dice;
+
+    public SavingContext(CombatContext combatContext, List<DiceData> diceList)
+    {
+        this.combatContext = combatContext;
+        this.diceList = diceList;
+       
+    }
+
+}
+public interface ISavingRelic : IRelic
+{
+    SavingStage Stage { get; }
+    void Activate(SavingContext ctx);
+}
+
 public class SavingSnapshot
 {
     public readonly List<DiceData> DiceList;
@@ -126,12 +149,9 @@ public class SavingSnapshot
         return (true, type);
     }
 }
-public interface ISingleDiceRelic : IRelicEffect //한개의 주사위를 조건으로 하는 유물
-{
-    void Activate(DiceData dice);
-}
-public interface IMultiDiceRelic : IRelicEffect//여러 개의 주사위를 조건으로 하는 유물
-{
-    void Activate(SavingSnapshot snapshot);
-}
 
+public enum SavingStage 
+{
+    SingleDice,
+    MultiDice
+}

@@ -1,19 +1,16 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using System.Linq;
 
 public class ValueChanger : MonoBehaviour, ICombatHook
 {
     private Dictionary<CombatPhase, int> orders;
-    private List<IDiceValueChangeRelic> valueChangeRelics;
-    private List<ISnapshotConditionRelic> conditionRelics;
-    private List<IFinalValueRelic> finalValueRelics;
+    private List<IValueRelic> valueRelicList;
 
     private void Awake()
     {
-        valueChangeRelics = new List<IDiceValueChangeRelic>();
-        conditionRelics = new List<ISnapshotConditionRelic>();
-        finalValueRelics = new List<IFinalValueRelic>();    
+        valueRelicList = new List<IValueRelic>();  
         orders = new Dictionary<CombatPhase, int>();
 
         orders[CombatPhase.valueChange] = 1;
@@ -24,35 +21,28 @@ public class ValueChanger : MonoBehaviour, ICombatHook
     } 
     private void Initialize()
     {
-        foreach (var effect in RelicManager.inst.GetRelicEffects<IDiceValueChangeRelic>())
+        foreach (var effect in RelicManager.inst.GetRelicEffects<IValueRelic>())
         {
-            valueChangeRelics.Add(effect);
-        }
-        foreach (var effect in RelicManager.inst.GetRelicEffects<ISnapshotConditionRelic>())
-        {
-            conditionRelics.Add(effect);
-        }
-        foreach (var effect in RelicManager.inst.GetRelicEffects<IFinalValueRelic>())
-        {
-            finalValueRelics.Add(effect);
+            valueRelicList.Add(effect);
         }
         CombatManager.inst.HookRegister(this);
 
     }
-    private void ApplyDiceValueToContext(List<DiceData> diceList, CombatContext ctx, DiceSlotRole slotRole)
+    private void ApplyDiceValueToContext(ValueContext ctx)
     {
         
         int sum = 0;
 
-        foreach (var dice in diceList)
+        foreach (var dice in ctx.diceList)
         {
             int sign;
-            foreach (var relic in valueChangeRelics)
+            var stageRelics = valueRelicList.Where(r => r.Stage == ValueStage.ValueApply);
+            foreach (var relic in stageRelics)
             {
-                if (!relic.CanAffect(slotRole))
+                if (!relic.CanAffect(ctx.slotRole))
                     continue;
-
-                relic.Activate(dice);
+                ctx.dice = dice;
+                relic.Activate(ctx);
 
             }
             sign = dice.diceType == DiceType.penalty ? -1 : 1;
@@ -61,24 +51,24 @@ public class ValueChanger : MonoBehaviour, ICombatHook
             
         }
 
-            switch (slotRole)
+            switch (ctx.slotRole)
             {
             case DiceSlotRole.Attack:
-                ctx.snapshot.calcAttackValue += sum;
+                ctx.combatContext.snapshot.calcAttackValue += sum;
                 break;
 
             case DiceSlotRole.Defense:
-                ctx.snapshot.calcDefenseValue += sum;
+                ctx.combatContext.snapshot.calcDefenseValue += sum;
                 break;
 
             }
     }
 
-    private SlotSnapshot CreateSlotSnapshot(List<DiceData> diceList, DiceSlotRole slotRole)
+    private void CreateSlotSnapshot(ValueContext ctx)
     {
         var snapshot = new SlotSnapshot();
-        snapshot.slotRole = slotRole;
-        foreach (var dice in diceList)
+        
+        foreach (var dice in ctx.diceList)
         {
             snapshot.totalDiceCount++;
             
@@ -136,25 +126,26 @@ public class ValueChanger : MonoBehaviour, ICombatHook
             }
         }
 
-        return snapshot;
+        ctx.slotSnapshot = snapshot;
     }
-    private void ApplyConditionalRelics( SlotSnapshot snapshot, CombatContext ctx)
+    private void ApplyConditionalRelics(ValueContext ctx)
     {
-       
 
-        foreach (var relic in conditionRelics)
+        var stageRelics = valueRelicList.Where(r => r.Stage == ValueStage.ValueConditionCheck);
+        foreach (var relic in stageRelics)
         {
-            if (!relic.CanAffect(snapshot.slotRole))
+            if (!relic.CanAffect(ctx.slotRole))
                 continue;
 
-            relic.Activate(snapshot, ctx);
+            relic.Activate(ctx);
         }
 
 
     }
-    void ApplyFinalValueRelics(CombatContext ctx)
+    void ApplyFinalValueRelics(ValueContext ctx)
     {
-        foreach (var relic in finalValueRelics)
+        var stageRelics = valueRelicList.Where(r => r.Stage == ValueStage.FinalValueEffect);
+        foreach (var relic in stageRelics)
         {
             relic.Activate(ctx);
         }
@@ -165,15 +156,21 @@ public class ValueChanger : MonoBehaviour, ICombatHook
         switch (phase)
         {
             case CombatPhase.valueChange:
-                var attackDiceList = ctx.snapshot.attackDice;
-                var defenseDiceList = ctx.snapshot.defenseDice;
-                ApplyDiceValueToContext(attackDiceList, ctx, DiceSlotRole.Attack);
-                ApplyDiceValueToContext(defenseDiceList, ctx, DiceSlotRole.Defense);
+                ValueContext attackValueContext = new ValueContext(ctx, DiceSlotRole.Attack, ctx.snapshot.attackDice);
+                ValueContext defenseValueContext = new ValueContext(ctx, DiceSlotRole.Defense, ctx.snapshot.defenseDice);
 
-                ApplyConditionalRelics(CreateSlotSnapshot(attackDiceList, DiceSlotRole.Attack), ctx);
-                ApplyConditionalRelics(CreateSlotSnapshot(defenseDiceList, DiceSlotRole.Defense), ctx);
+                ApplyDiceValueToContext(attackValueContext);
+                ApplyDiceValueToContext(defenseValueContext);
 
-                ApplyFinalValueRelics(ctx);
+                CreateSlotSnapshot(attackValueContext);
+                CreateSlotSnapshot(defenseValueContext);
+
+                ApplyConditionalRelics(attackValueContext);
+                ApplyConditionalRelics(defenseValueContext);
+
+                ApplyFinalValueRelics(attackValueContext); 
+                // 이 함수는 컴뱃 컨텍스트에서 총 공격과 방어 수치만 알면 되기에 굳이 attack, defense value context 두개를 매개로 부를 필요는 없다.
+                // 어차피 valueContext에는 combat Context가 있기 때문.
 
                 break;
         }
@@ -197,21 +194,36 @@ public class ValueChanger : MonoBehaviour, ICombatHook
 
 }
 
-public interface IDiceValueChangeRelic : IRelicEffect
+public interface IValueRelic : IRelic
 {
-    void Activate(DiceData dice);
+    ValueStage Stage { get; }
+    public void Activate(ValueContext ctx);
 }
-interface ISnapshotConditionRelic : IRelicEffect
+
+public class ValueContext
 {
-    int Activate(SlotSnapshot snapshot, CombatContext ctx);
+    public CombatContext combatContext { get; }
+    public DiceSlotRole slotRole { get; }
+
+    public IReadOnlyList<DiceData> diceList { get; }
+    public DiceData dice;
+
+    public SlotSnapshot slotSnapshot { set;  get; }
+    public ValueContext(
+        CombatContext combatContext,
+        DiceSlotRole slotRole,
+        IReadOnlyList<DiceData> diceList
+        )
+    {
+        this.combatContext = combatContext;
+        this.slotRole = slotRole;
+        this.diceList = diceList; 
+    }
 }
-interface IFinalValueRelic : IRelicEffect
-{
-    void Activate(CombatContext ctx);
-}
+
 public class SlotSnapshot
 {
-    public DiceSlotRole slotRole;
+    
     public int totalDiceCount;
     public int basicDiceCount;
     public int penaltyDiceCount;
@@ -238,3 +250,11 @@ public class DiceInfo
     public int value;
     public DiceType type;
 }
+
+public enum ValueStage 
+{ 
+    ValueApply,
+    ValueConditionCheck,
+    FinalValueEffect
+}
+

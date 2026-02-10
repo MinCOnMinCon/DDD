@@ -12,28 +12,7 @@ public class RelicManager : MonoBehaviour
     private static readonly Dictionary<int, Func<RelicEffect>> factory // 모든 유물의 id와 그 유물의 RelicEffect 객체를 생성하는 함수를 담은 델리게이트 변수의 딕셔너리
         = new()
         {
-            // -------------------------
-        // 수치계산 - 1
-        // -------------------------
-        { 6,  () => new Relic_6()  },
-        { 22, () => new Relic_22() },
-        { 31, () => new Relic_31() },
-        { 32, () => new Relic_32() },
-
-        // -------------------------
-        // 수치계산 - 2
-        // -------------------------
-        { 4,  () => new Relic_4()  },
-        { 10, () => new Relic_10() },
-        { 11, () => new Relic_11() },
-        { 20, () => new Relic_20() },
-        { 28, () => new Relic_28() },
-
-        // -------------------------
-        // 수치계산 - 3
-        // -------------------------
-        { 26, () => new Relic_26() },
-        { 29, () => new Relic_29() },
+          
         };
 
     private void Awake()
@@ -70,7 +49,11 @@ public class RelicManager : MonoBehaviour
     }
 }
 
-public abstract class RelicEffect
+/// <summary>
+/// 유물 효과의 공동적인 속성을 가지는 클래스
+/// 유물 효과면 이 클래스를 상속받아야 하고 유물 효과에 필요한 변수나 함수를 가진다.
+/// </summary>
+public abstract class RelicEffect 
 {
     public int RelicId { get; }
 
@@ -79,11 +62,16 @@ public abstract class RelicEffect
         RelicId = relicId;
     }
 
-    public virtual bool CanAffect(DiceSlotRole role) => true;
+    
 }
-public interface IRelicEffect
+
+/// <summary>
+/// 유물의 공동적인 함수를 담고 있는 인터페이스. 
+/// 유물이면 다 똑같이 가져야 하는 함수를 담고 있고 유물이라면 이 인터페이스를 상속받아야 한다.
+/// </summary>
+public interface IRelic
 {
-    bool CanAffect(DiceSlotRole role);
+    bool CanAffect(DiceSlotRole slotRole);
 }
 
 public class CombatRelicContext

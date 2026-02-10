@@ -178,7 +178,7 @@ public class ComboManager : MonoBehaviour, ICombatHook
 
 
 
-public interface IComboRelic : IRelicEffect
+public interface IComboRelic : IRelic
 {
     ComboStage Stage { get; }
     
