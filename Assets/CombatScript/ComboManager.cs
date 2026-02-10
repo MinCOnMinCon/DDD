@@ -34,49 +34,20 @@ public class ComboManager : MonoBehaviour, ICombatHook
         
         CombatManager.inst.HookRegister(this);
     }
-    public int[] BuildComboSnapshot(ComboContext ctx)
+    public void BuildComboSnapshot(ComboContext ctx)
     {
-        int[] eyeCounts = new int[6];
-        List<DiceData> diceObjects;
-        switch (ctx.slotRole)
-        {
-            case DiceSlotRole.Attack:
-                diceObjects = ctx.combatCtx.snapshot.attackDice;
-                break;
-            case DiceSlotRole.Defense:
-                diceObjects = ctx.combatCtx.snapshot.defenseDice;
-                break;
-            default:
-                diceObjects = null;
-                break;
-        }
-        foreach (var dice in diceObjects)
+        ctx.eyeCounts = new int[6];
+        
+        foreach (var dice in ctx.diceList)
         { 
             // 1. 기본 눈 반영
-            eyeCounts[dice.diceEye - 1]++;
-            var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.CandidateModify);
-            // 2. 복사본 제작에 관여하는 유물 처리
-            foreach (var relic in stageRelics)
-            {
-                if (!relic.CanAffect(ctx.slotRole))
-                    continue;
+            ctx.eyeCounts[dice.diceEye - 1]++;
+           
 
-                relic.Activate(ctx);
-                    
-            }
         }
-
-        return eyeCounts;
-    }
-
-    
-    public ComboCandidate BuildComboCandidate(ComboContext ctx)
-    {
-        // 1. 기본 콤보 후보 선정
-        ComboCandidate bestCandidate = GetBaseCandidate(ctx.eyeCounts);
-
-        var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.CandidateModify);
-        // 2. 콤보 관여 유물 적용
+        // 2. eyeCounts 제작에 관여하는 유물 처리
+        // 기본 눈 반영이 된 eyeCounts를 보고 그걸 수정한다.
+        var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.CreateSnapshot);
         foreach (var relic in stageRelics)
         {
             if (!relic.CanAffect(ctx.slotRole))
@@ -84,14 +55,33 @@ public class ComboManager : MonoBehaviour, ICombatHook
 
             relic.Activate(ctx);
 
-            // 3. 더 높은 개수만 채택
-            if (ctx.candidate.Count > bestCandidate.Count)
+        }
+
+    }
+
+    
+    public void BuildComboCandidate(ComboContext ctx)
+    {
+        // 1. 기본 콤보 후보 선정
+        ctx.candidate = GetBaseCandidate(ctx.eyeCounts);
+     
+        var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.BuildCandidate);
+        // 2. 콤보 관여 유물 적용
+        foreach (var relic in stageRelics)
+        {
+            if (!relic.CanAffect(ctx.slotRole))
+                continue;
+
+            ctx.tempCandidate = ctx.candidate;
+            relic.Activate(ctx);
+
+            // 3. 후보 중 눈의 개수가 더 많은 후보를 고른다.
+            if (ctx.tempCandidate.Count > ctx.candidate.Count)
             {
-                bestCandidate = ctx.candidate;
+                ctx.candidate = ctx.tempCandidate;
             }
         }
 
-        return bestCandidate;
     }
     private ComboCandidate GetBaseCandidate(int[] eyeCounts)
     {
@@ -109,10 +99,22 @@ public class ComboManager : MonoBehaviour, ICombatHook
 
         return new ComboCandidate(bestEye, bestCount);
     }
+    public void ModifyCandidateAfterBuild(ComboContext ctx)
+    {
+        var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.CandidateModify);
+        foreach (var relic in stageRelics)
+        {
+            if (!relic.CanAffect(ctx.slotRole))
+                continue;
+
+            relic.Activate(ctx);
+
+        }
+    }
     public void ApplyComboEffect(ComboContext ctx)
     {
         bool isReplaced = false;
-        var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.CandidateModify);
+        var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.EffectApply);
         foreach (var relic in stageRelics)
         {
             if (!relic.CanAffect(ctx.slotRole))
@@ -149,14 +151,17 @@ public class ComboManager : MonoBehaviour, ICombatHook
         switch (phase)
         {
             case CombatPhase.valueChange:
-                ComboContext attackCtx = new ComboContext(DiceSlotRole.Attack, ctx);
-                ComboContext defenseCtx = new ComboContext(DiceSlotRole.Defense, ctx);
+                ComboContext attackCtx = new ComboContext(ctx, DiceSlotRole.Attack, ctx.snapshot.attackDice);
+                ComboContext defenseCtx = new ComboContext(ctx, DiceSlotRole.Defense, ctx.snapshot.defenseDice);
 
-                attackCtx.eyeCounts = BuildComboSnapshot(attackCtx);
-                defenseCtx.eyeCounts = BuildComboSnapshot(defenseCtx);
+                BuildComboSnapshot(attackCtx);
+                BuildComboSnapshot(defenseCtx);
 
-                attackCtx.candidate = BuildComboCandidate(attackCtx);
-                defenseCtx.candidate =  BuildComboCandidate(defenseCtx);
+                BuildComboCandidate(attackCtx);
+                BuildComboCandidate(defenseCtx);
+
+                ModifyCandidateAfterBuild(attackCtx);
+                ModifyCandidateAfterBuild(defenseCtx);
 
                 ApplyComboEffect(attackCtx);
                 ApplyComboEffect(defenseCtx);
@@ -189,14 +194,18 @@ public class ComboContext
 {
     public DiceSlotRole slotRole;
     public CombatContext combatCtx;
-
+    public IReadOnlyList<DiceData> diceList;
     public int[] eyeCounts;
 
-    public ComboCandidate candidate;
-    public ComboContext(DiceSlotRole role , CombatContext combatCtx)
+    public ComboCandidate candidate; // 가장 최고의 candidate
+    public ComboCandidate tempCandidate; // 유물 효과로 발생한 임시 candidate
+    public ComboContext(CombatContext combatContext,
+        DiceSlotRole slotRole,
+        IReadOnlyList<DiceData> diceList)
     {
-        this.slotRole = role;
-        this.combatCtx = combatCtx;
+        this.slotRole = slotRole;
+        this.combatCtx = combatContext;
+        this.diceList = diceList;
     }
 }
 public struct ComboCandidate

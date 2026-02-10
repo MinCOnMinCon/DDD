@@ -37,7 +37,7 @@ public class SavingManager : MonoBehaviour, ICombatHook
         switch (phase)
         {
             case CombatPhase.turnEnd:
-                SavingContext savingContext = new SavingContext(ctx, DiceDataBuilder.BuildDiceDataList(ctx.savingSlotDiceList));
+                SavingContext savingContext = new SavingContext(ctx, ctx.snapshot.saveDice);
                 EvaluateSingleDice(savingContext);
                 savingContext.savingSnapshot = new SavingSnapshot(savingContext.diceList);
                 EvaluateMultiDice(savingContext);

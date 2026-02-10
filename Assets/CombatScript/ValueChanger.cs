@@ -205,14 +205,14 @@ public class ValueContext
     public CombatContext combatContext { get; }
     public DiceSlotRole slotRole { get; }
 
-    public IReadOnlyList<DiceData> diceList { get; }
+    public List<DiceData> diceList { get; }
     public DiceData dice;
 
     public SlotSnapshot slotSnapshot { set;  get; }
     public ValueContext(
         CombatContext combatContext,
         DiceSlotRole slotRole,
-        IReadOnlyList<DiceData> diceList
+        List<DiceData> diceList
         )
     {
         this.combatContext = combatContext;
@@ -258,3 +258,4 @@ public enum ValueStage
     FinalValueEffect
 }
 
+    
