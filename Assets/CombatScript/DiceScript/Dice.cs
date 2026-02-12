@@ -33,21 +33,18 @@ public class Dice : MonoBehaviour
     [SerializeField]
     private float throwingSpeed; // 주사위 드래그 끝나고 날라가는 속도를 느리게 하기 위한 변수 
    
-
-    public void DiceInit(int eye, DiceType type)
+    public void DiceInit(int span, DiceType type)
+    {
+        diceData = new DiceData(span, type);
+        SetType(type);
+    }
+    public void DiceReset(int eye)
     {
         diceRigidbody.angularVelocity = 0;
         diceRigidbody.linearVelocity = Vector2.zero;
         ClearEyes();
-        if(type == DiceType.loan)
-        {
-            diceData = new DiceData(eye, type, CombatManager.inst.combatContext.diceState.loanDiceSpan);
-        }
-        else
-        {
-            diceData = new DiceData(eye, type, int.MaxValue);
-        }
-        SetType(type);
+
+        diceData.setEye(eye);
         SpawnEyes(eye);
        
     }
@@ -207,12 +204,16 @@ public class Dice : MonoBehaviour
 
 public class DiceData
 {
-    public DiceData(int eye, DiceType type, int span)
+    public DiceData(int span, DiceType type)
+    {
+        diceSpan = span;
+        diceType = type;
+    }
+
+    public void setEye(int eye)
     {
         diceEye = eye;
         diceValue = eye;
-        diceType = type;
-        diceSpan = span;
     }
 
     public int diceEye { get; private set; }

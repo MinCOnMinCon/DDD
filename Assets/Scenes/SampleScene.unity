@@ -388,7 +388,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be53af2dbb5c2134099f33db7c97d4f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RelicManager
-  testRelic: {fileID: 11400000, guid: 3369d4a2cb24cd3479b8c0f58e1c611d, type: 2}
+  testRelic: {fileID: 0}
 --- !u!114 &415948725
 MonoBehaviour:
   m_ObjectHideFlags: 0

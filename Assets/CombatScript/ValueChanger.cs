@@ -13,7 +13,7 @@ public class ValueChanger : MonoBehaviour, ICombatHook
         valueRelicList = new List<IValueRelic>();  
         orders = new Dictionary<CombatPhase, int>();
 
-        orders[CombatPhase.valueChange] = 1;
+        orders[CombatPhase.valueChange] = 2;
     }
     private void Start()
     {
@@ -206,7 +206,7 @@ public class ValueContext
     public DiceSlotRole slotRole { get; }
 
     public List<DiceData> diceList { get; }
-    public DiceData dice;
+    public DiceData dice; // ValueApply Stage에서 효과를 받을 주사위. diceList의 주사위가 dice에 한번씩 들어감
 
     public SlotSnapshot slotSnapshot { set;  get; }
     public ValueContext(

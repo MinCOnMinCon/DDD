@@ -222,7 +222,7 @@ public struct ComboCandidate
 public enum ComboStage
 {
     CreateSnapshot,
-    BuildCandidate,
+    BuildCandidate, 
     CandidateModify,
     EffectApply
 }

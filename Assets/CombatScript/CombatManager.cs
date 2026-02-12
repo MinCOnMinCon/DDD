@@ -92,7 +92,12 @@ public class CombatContext
     
 }
 
-public class CombatContextSnapshot
+/// <summary>
+/// CombatPhase가 valueChange일 때 만드는 컴뱃 컨텍스트의 스냅샷. 
+/// valueChange가 확정나면 이 컴뱃 컨텍스트 스냅샷의 내용을 적용시킨다.
+/// 확정나지 않았다면 스냅샷을 버린다.
+/// </summary>
+public class CombatContextSnapshot 
 {
     // ===== HP =====
     public int currentHp;

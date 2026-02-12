@@ -6,9 +6,9 @@ public class DiceInitValue : ScriptableObject
     public int basicDiceNum = 3;
     public int penaltyDiceNum = 0;
     public int loanDiceNum = 0;
-    public int basicPenaltyDicePerLoan = 1;
+    public int basePenaltyDicePerLoan = 1;
     public int curPenaltyDicePerLoan = 0;
-    public int basicDicePerLoan = 2;
+    public int loanDicePerLoan = 2;
     public int loanNum = 0;
     public int diceEyeNum = 6; // n 면 주사위 -> 현재는 6면
     public int loanDiceSpan = 2;

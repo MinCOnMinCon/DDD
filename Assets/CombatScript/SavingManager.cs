@@ -8,13 +8,15 @@ public class SavingManager : MonoBehaviour, ICombatHook
 {
     private Dictionary<CombatPhase, int> orders;
     private List<ISavingRelic> savingRelicList;
-    [SerializeField]
+    [SerializeField]    
     private int maxSavingValue = 20;
+    [SerializeField]
+    private int maxSavingCount = 3;
     private void Awake()
     {
         orders = new Dictionary<CombatPhase, int>();
         savingRelicList = new List<ISavingRelic>();
-        orders[CombatPhase.turnEnd] = 0;
+        orders[CombatPhase.valueChange] = 1;
     }
     private void Start()
     {
@@ -36,8 +38,8 @@ public class SavingManager : MonoBehaviour, ICombatHook
     {
         switch (phase)
         {
-            case CombatPhase.turnEnd:
-                SavingContext savingContext = new SavingContext(ctx, ctx.snapshot.saveDice);
+            case CombatPhase.valueChange:
+                SavingContext savingContext = new SavingContext(ctx, ctx.snapshot.saveDice, maxSavingValue, maxSavingCount);
                 EvaluateSingleDice(savingContext);
                 savingContext.savingSnapshot = new SavingSnapshot(savingContext.diceList);
                 EvaluateMultiDice(savingContext);
@@ -85,21 +87,26 @@ public class SavingManager : MonoBehaviour, ICombatHook
     }
     
 }
-
+/// <summary>
+/// 턴 종료 시 '저축 효과 및 유물 효과를 적용' 시키기 용이하게 하기 위한 클래스
+/// </summary>
 public class SavingContext
 {
     public CombatContext combatContext { get; }
     public SavingSnapshot savingSnapshot;
     public List<DiceData> diceList;
+    public int maxSavingValue;
+    public int maxSavingCount;
 
     // SingleDice용
     public DiceData dice;
 
-    public SavingContext(CombatContext combatContext, List<DiceData> diceList)
+    public SavingContext(CombatContext combatContext, List<DiceData> diceList, int value, int count)
     {
         this.combatContext = combatContext;
         this.diceList = diceList;
-       
+        this.maxSavingCount = count;
+        this.maxSavingValue = value;
     }
 
 }
@@ -108,8 +115,10 @@ public interface ISavingRelic : IRelic
     SavingStage Stage { get; }
     void Activate(SavingContext ctx);
 }
-
-public class SavingSnapshot
+/// <summary>
+/// 저축 관련 유물의 '조건 체크'를 용이하게 하기 위해 만든 클래스
+/// </summary>
+public class SavingSnapshot 
 {
     public readonly List<DiceData> DiceList;
     public int DiceCount => DiceList.Count;
@@ -119,9 +128,9 @@ public class SavingSnapshot
         DiceList = new List<DiceData>(source);
     }
 
-    public bool IsFullyFilled(int requiredCount)
+    public bool IsFullyFilled(int maxCount)
     {
-        return DiceList.Count == requiredCount;
+        return DiceList.Count == maxCount;
     }
 
     public bool IsAllSameEye()
