@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: DiceInitValue
   m_EditorClassIdentifier: Assembly-CSharp::DiceInitValue
   basicDiceNum: 3
-  penaltyDiceNum: 2
+  penaltyDiceNum: 3
   loanDiceNum: 0
-  basicPenaltyDicePerLoan: 1
+  basePenaltyDicePerLoan: 1
   curPenaltyDicePerLoan: 0
-  basicDicePerLoan: 2
+  loanDicePerLoan: 2
   loanNum: 0
   diceEyeNum: 6
   loanDiceSpan: 2

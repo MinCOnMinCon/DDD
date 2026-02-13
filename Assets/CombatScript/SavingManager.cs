@@ -66,6 +66,7 @@ public class SavingManager : MonoBehaviour, ICombatHook
         foreach (var relic in stageRelics)
         {
             relic.Activate(ctx);
+            
         }
     }
     private void EvaluateMultiDice(SavingContext ctx)
@@ -74,11 +75,13 @@ public class SavingManager : MonoBehaviour, ICombatHook
         foreach (var relic in stageRelics)
         {
             relic.Activate(ctx);
+
         }
+      
     }
     public bool CanExecute(CombatPhase phase)
     {
-        bool canExecute = phase == CombatPhase.turnEnd;
+        bool canExecute = phase == CombatPhase.valueChange;
         return canExecute;
     }
     public int GetOrder(CombatPhase phase)

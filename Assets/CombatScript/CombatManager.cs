@@ -62,6 +62,7 @@ public class CombatManager : MonoBehaviour
 
         foreach (var hook in executableHooks)
         {
+            Debug.Log("현재 페이즈 : " + phase.ToString() + " 발동 훅 : " + hook.GetOrder(phase));
             hook.OnCombatPhase(phase, combatContext);
         }
     }

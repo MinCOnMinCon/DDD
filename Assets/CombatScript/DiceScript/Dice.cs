@@ -19,8 +19,8 @@ public class Dice : MonoBehaviour
     [SerializeField] private GameObject eyePrefab;      // pipPrefab → eyePrefab
     [SerializeField] private SpriteRenderer backgroundRenderer;
 
-    [SerializeField] private float eyeSizeNormal = 0.18f;   // 2~6 공통 크기
-    [SerializeField] private float eyeSizeSingle = 0.28f;   // 1 전용 (좀 큼)
+    [SerializeField] private float eyeSizeNormal = 0.10f;   // 2~6 공통 크기
+    [SerializeField] private float eyeSizeSingle = 0.20f;   // 1 전용 (좀 큼)
     [SerializeField] private float eyeDistant = 0.4f;
     private Color eyeColor;
     private Vector3[][] eyePositions;

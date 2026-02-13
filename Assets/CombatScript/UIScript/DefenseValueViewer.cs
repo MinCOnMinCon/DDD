@@ -6,7 +6,7 @@ public class DefenseValueViewer : ValueViewer
     protected override void Awake()
     {
         base.Awake();
-        orders[CombatPhase.valueChange] = 2;
+        orders[CombatPhase.valueChange] = 3;
     }
     public override void OnCombatPhase(CombatPhase phase, CombatContext ctx)
     {

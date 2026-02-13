@@ -51,8 +51,8 @@ public class ValueChanger : MonoBehaviour, ICombatHook
             
         }
 
-            switch (ctx.slotRole)
-            {
+        switch (ctx.slotRole)
+        {
             case DiceSlotRole.Attack:
                 ctx.combatContext.snapshot.calcAttackValue += sum;
                 break;
@@ -61,7 +61,7 @@ public class ValueChanger : MonoBehaviour, ICombatHook
                 ctx.combatContext.snapshot.calcDefenseValue += sum;
                 break;
 
-            }
+        }
     }
 
     private void CreateSlotSnapshot(ValueContext ctx)
@@ -168,10 +168,9 @@ public class ValueChanger : MonoBehaviour, ICombatHook
                 ApplyConditionalRelics(attackValueContext);
                 ApplyConditionalRelics(defenseValueContext);
 
-                ApplyFinalValueRelics(attackValueContext); 
+                ApplyFinalValueRelics(attackValueContext);
                 // 이 함수는 컴뱃 컨텍스트에서 총 공격과 방어 수치만 알면 되기에 굳이 attack, defense value context 두개를 매개로 부를 필요는 없다.
                 // 어차피 valueContext에는 combat Context가 있기 때문.
-
                 break;
         }
 
