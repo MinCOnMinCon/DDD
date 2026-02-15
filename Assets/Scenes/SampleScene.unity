@@ -386,10 +386,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RelicManager
   ownedRelics:
-  - {fileID: 11400000, guid: d8683846d7f22754181cb4a2b2022ede, type: 2}
   - {fileID: 11400000, guid: 2cea6081f31b6f8438bd20430f997c11, type: 2}
-  - {fileID: 11400000, guid: 696e2e710561b8a4a900e72dd2fe119c, type: 2}
   - {fileID: 11400000, guid: 0cf5cae92ceb73940be7824b7395eb2b, type: 2}
+  - {fileID: 11400000, guid: d8683846d7f22754181cb4a2b2022ede, type: 2}
 --- !u!114 &415948725
 MonoBehaviour:
   m_ObjectHideFlags: 0

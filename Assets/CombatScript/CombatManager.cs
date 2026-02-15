@@ -81,6 +81,7 @@ public class CombatContext
     public int turnCount;
 
     public CombatContextSnapshot snapshot { get; set; }
+    public IDiceService diceFactory;
 
     public CombatContext()
     {

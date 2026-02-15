@@ -8,7 +8,7 @@ using ue = UnityEngine;
 
 
 
-public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider
+public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, IDiceService
 {
     [SerializeField]
     private Dictionary<CombatPhase, int> orders;
@@ -73,12 +73,12 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider
        
     }
     /// <summary>
-    /// 주사위 생성함수. 주어진 파라미터로 주사위를 만든다.
+    /// 주사위 생성함수. 주어진 파라미터로 주사위를 만든다. 그리고 리스트에 추가한다.
     /// </summary>
     /// <param name="neededDice"></param>
     /// <param name="diceType"></param>
     /// <param name="span"></param>
-    private void CreateDice(int neededDice, DiceType diceType, int span)
+    public void CreateDice(int neededDice, DiceType diceType, int span)
     {
         List<GameObject> diceList;
         switch (diceType) 
@@ -103,6 +103,30 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider
             diceList.Add(Instantiate(dicePrefab, diceSpawnPos, Quaternion.identity));
             GameObject dice = diceList[diceList.Count - 1];
             dice.GetComponent<Dice>().DiceInit(span, diceType);
+        }
+    }
+    public void DestroyDice(int destroyedDice, DiceType diceType)
+    {
+        List<GameObject> diceList;
+        switch (diceType)
+        {
+            case DiceType.basic:
+                diceList = diceState.basicDiceList;
+                break;
+            case DiceType.penalty:
+                diceList = diceState.penaltyDiceList;
+                break;
+            case DiceType.loan:
+                diceList = diceState.loanDiceList;
+                break;
+            default:
+                diceList = null;
+                break;
+
+        }
+        for(int i = diceList.Count - 1; i>= destroyedDice; i--)
+        {
+            Destroy(diceList[i]);
         }
     }
     // <summary>
@@ -215,6 +239,7 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider
     public void ApplyTo(CombatContext ctx)
     {
         ctx.diceState = diceState;
+        ctx.diceFactory = this; // 컴뱃 컨텍스트에 주사위를 생성하고 삭제하는 기능만 제공 
     }
     
 }
@@ -282,4 +307,10 @@ public class DiceState
         penaltyDiceWeight[0] = div.diceEyeNum;
         loanDiceWeight[0] = div.diceEyeNum;
     }
+}
+
+public interface IDiceService 
+{
+    void CreateDice(int neededDice, DiceType diceType, int span);
+    void DestroyDice(int destroyedDice, DiceType diceType);
 }

@@ -15,6 +15,7 @@ public class ComboManager : MonoBehaviour, ICombatHook
         orders = new Dictionary<CombatPhase, int>();
 
         orders[CombatPhase.valueChange] = 0;
+        orders[CombatPhase.valueSubmit] = 0;
     }
 
     private void Start()
@@ -111,23 +112,28 @@ public class ComboManager : MonoBehaviour, ICombatHook
 
         }
     }
-    public void ApplyComboEffect(ComboContext ctx)
+    private void ApplyComboEffect(ComboContext ctx)
     {
-        bool isReplaced = false;
+        ctx.isBaseComboReplaced = false;
         var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.EffectApply);
         foreach (var relic in stageRelics)
         {
             if (!relic.CanAffect(ctx.slotRole))
                 continue;
 
-            
-            relic.Activate(ctx);
-            isReplaced = true;
-            break; // 하나만 적용
-            
+            if (!ctx.isBaseComboReplaced && relic is IComboEffectReplace)
+            {
+                relic.Activate(ctx);
+            }
+            else if(relic is not IComboEffectReplace)
+            {
+                
+                relic.Activate(ctx);
+                
+            }
         }
 
-        if (!isReplaced)
+        if (!ctx.isBaseComboReplaced)
         {
             ApplyBaseCombo(ctx);
         }
@@ -145,14 +151,27 @@ public class ComboManager : MonoBehaviour, ICombatHook
             ctx.combatCtx.snapshot.calcDefenseValue += value;
         }
     }
+    private void ApplyEffectAfterSubmit(ComboContext ctx)
+    {
+        var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.EffectApply);
+        foreach (var relic in stageRelics)
+        {
+            if (!relic.CanAffect(ctx.slotRole))
+                continue;
 
+            relic.Activate(ctx);
+        }
+
+    }
     public void OnCombatPhase(CombatPhase phase, CombatContext ctx)
     {
+        ComboContext attackCtx = null;
+        ComboContext defenseCtx = null;
         switch (phase)
         {
             case CombatPhase.valueChange:
-                ComboContext attackCtx = new ComboContext(ctx, DiceSlotRole.Attack, ctx.snapshot.attackDice);
-                ComboContext defenseCtx = new ComboContext(ctx, DiceSlotRole.Defense, ctx.snapshot.defenseDice);
+                attackCtx = new ComboContext(ctx, DiceSlotRole.Attack, ctx.snapshot.attackDice);
+                defenseCtx = new ComboContext(ctx, DiceSlotRole.Defense, ctx.snapshot.defenseDice);
 
                 BuildComboSnapshot(attackCtx);
                 BuildComboSnapshot(defenseCtx);
@@ -166,6 +185,12 @@ public class ComboManager : MonoBehaviour, ICombatHook
                 ApplyComboEffect(attackCtx);
                 ApplyComboEffect(defenseCtx);
                 break;
+            case CombatPhase.valueSubmit: 
+                ApplyEffectAfterSubmit(attackCtx);
+                ApplyEffectAfterSubmit(defenseCtx); 
+                
+                break;
+
         }
 
     }
@@ -181,8 +206,10 @@ public class ComboManager : MonoBehaviour, ICombatHook
     }
 }
 
-
-
+/// <summary>
+/// 기본 콤보 효과를 대체하는 유물이 상속하는 인터페이스
+/// </summary>
+public interface IComboEffectReplace { } 
 public interface IComboRelic : IRelic
 {
     ComboStage Stage { get; }
@@ -197,6 +224,7 @@ public class ComboContext
     public IReadOnlyList<DiceData> diceList;
     public int[] eyeCounts;
 
+    public bool isBaseComboReplaced; // 콤보 효과 대체 유물이 발동해 기본 콤보 효과가 대체되었는지 체크하는 변수
     public ComboCandidate candidate; // 가장 최고의 candidate
     public ComboCandidate tempCandidate; // 유물 효과로 발생한 임시 candidate
     public ComboContext(CombatContext combatContext,
@@ -224,7 +252,8 @@ public enum ComboStage
     CreateSnapshot,
     BuildCandidate, 
     CandidateModify,
-    EffectApply
+    EffectApply,
+    AfterSubmit
 }
 
 

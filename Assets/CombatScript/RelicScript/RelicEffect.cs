@@ -283,13 +283,15 @@ public class Relic_9 : ComboRelicEffectBase
     }
 }
 
-
+// ======================
+// ÄÞº¸°è»ê - 2.5 (CandidateModify)
+// ======================
 // 23. ¿¬Å¸
 public class Relic_23 : ComboRelicEffectBase
 {
     public Relic_23() : base(23) { }
 
-    public override ComboStage Stage => ComboStage.BuildCandidate;
+    public override ComboStage Stage => ComboStage.CandidateModify;
 
     public override void Activate(ComboContext ctx)
     {
@@ -313,13 +315,14 @@ public class Relic_18 : ComboRelicEffectBase
 {
     public Relic_18() : base(18) { }
 
-    public override ComboStage Stage => ComboStage.EffectApply;
+    public override ComboStage Stage => ComboStage.AfterSubmit;
 
     public override void Activate(ComboContext ctx)
     {
         if (ctx.candidate.Eye == 3 && ctx.candidate.Count >= 3)
         {
-            ctx.combatCtx.snapshot.basicDiceCount += 1;
+            ctx.combatCtx.diceFactory.CreateDice(1, DiceType.basic, int.MaxValue);
+            ctx.combatCtx.diceState.basicDiceNum++;
         }
     }
 }
@@ -338,6 +341,7 @@ public class Relic_24 : ComboRelicEffectBase
             ctx.candidate.Eye == 1 &&
             ctx.candidate.Count >= 5)
         {
+            
             ctx.combatCtx.snapshot.calcAttackValue += 40;
         }
     }
@@ -345,7 +349,7 @@ public class Relic_24 : ComboRelicEffectBase
 
 
 // 25. 2ÀÇ2½Â
-public class Relic_25 : ComboRelicEffectBase
+public class Relic_25 : ComboRelicEffectBase, IComboEffectReplace
 {
     public Relic_25() : base(25) { }
 
@@ -361,7 +365,10 @@ public class Relic_25 : ComboRelicEffectBase
                 ctx.combatCtx.snapshot.calcAttackValue += value;
             else if (ctx.slotRole == DiceSlotRole.Defense)
                 ctx.combatCtx.snapshot.calcDefenseValue += value;
+            ctx.isBaseComboReplaced = true;
         }
+        ctx.isBaseComboReplaced = false;
+        
     }
 }
 
@@ -371,13 +378,13 @@ public class Relic_27 : ComboRelicEffectBase
 {
     public Relic_27() : base(27) { }
 
-    public override ComboStage Stage => ComboStage.EffectApply;
+    public override ComboStage Stage => ComboStage.AfterSubmit;
 
     public override void Activate(ComboContext ctx)
     {
         if (ctx.slotRole == DiceSlotRole.Defense)
         {
-            ctx.combatCtx.snapshot.currentHp += ctx.candidate.Count;
+            ctx.combatCtx.playerState.hp += ctx.candidate.Count;
         }
     }
 }
@@ -407,7 +414,7 @@ public class Relic_3 : SavingRelicEffectBase
 {
     public Relic_3() : base(3) { }
 
-    public override SavingStage Stage => SavingStage.MultiDice;
+    public override SavingStage Stage => SavingStage.AfterSubmit;
 
     public override void Activate(SavingContext ctx)
     {
@@ -433,7 +440,7 @@ public class Relic_19 : SavingRelicEffectBase
 {
     public Relic_19() : base(19) { }
 
-    public override SavingStage Stage => SavingStage.MultiDice;
+    public override SavingStage Stage => SavingStage.AfterSubmit;
 
     public override void Activate(SavingContext ctx)
     {
@@ -444,6 +451,7 @@ public class Relic_19 : SavingRelicEffectBase
 
         if (isSame && type == DiceType.penalty)
         {
+            ctx.combatContext.diceFactory.CreateDice(3, DiceType.loan, 2);
             ctx.combatContext.diceState.loanDiceNum += 3;
         }
     }
@@ -459,7 +467,7 @@ public class Relic_30 : SavingRelicEffectBase
 {
     public Relic_30() : base(30) { }
 
-    public override SavingStage Stage => SavingStage.SingleDice;
+    public override SavingStage Stage => SavingStage.AfterSubmit;
 
     public override void Activate(SavingContext ctx)
     {

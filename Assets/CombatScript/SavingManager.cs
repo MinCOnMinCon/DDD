@@ -17,6 +17,7 @@ public class SavingManager : MonoBehaviour, ICombatHook
         orders = new Dictionary<CombatPhase, int>();
         savingRelicList = new List<ISavingRelic>();
         orders[CombatPhase.valueChange] = 1;
+        orders[CombatPhase.valueSubmit] = 1;
     }
     private void Start()
     {
@@ -44,7 +45,9 @@ public class SavingManager : MonoBehaviour, ICombatHook
                 savingContext.savingSnapshot = new SavingSnapshot(savingContext.diceList);
                 EvaluateMultiDice(savingContext);
                 break;
+            case CombatPhase.valueSubmit:
 
+                break;
         }
     }
     private void EvaluateSingleDice(SavingContext ctx)
@@ -62,7 +65,7 @@ public class SavingManager : MonoBehaviour, ICombatHook
 
     private void ActivateSingleRelics(SavingContext ctx)
     {
-        var stageRelics = savingRelicList.Where(r => r.Stage == SavingStage.SingleDice);
+        var stageRelics = savingRelicList.Where(r => r.Stage == SavingStage.SingleDiceBeforeSubmit);
         foreach (var relic in stageRelics)
         {
             relic.Activate(ctx);
@@ -71,7 +74,7 @@ public class SavingManager : MonoBehaviour, ICombatHook
     }
     private void EvaluateMultiDice(SavingContext ctx)
     {
-        var stageRelics = savingRelicList.Where(r => r.Stage == SavingStage.MultiDice);
+        var stageRelics = savingRelicList.Where(r => r.Stage == SavingStage.MultiDiceBeforeSubmit);
         foreach (var relic in stageRelics)
         {
             relic.Activate(ctx);
@@ -164,6 +167,8 @@ public class SavingSnapshot
 
 public enum SavingStage 
 {
-    SingleDice,
-    MultiDice
+    SingleDiceBeforeSubmit,
+    MultiDiceBeforeSubmit,
+    AfterSubmit
+
 }
