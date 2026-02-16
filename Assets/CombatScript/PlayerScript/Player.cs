@@ -11,9 +11,6 @@ public class Player : MonoBehaviour, ICombatHook, ICombatContextProvider
 
     [SerializeField]
     private PlayerInitValue piv;
-    private DiceManager diceM;
-    private RelicManager relicM;
-    [SerializeField]
     private Dictionary<CombatPhase, int> orders;
     
     public PlayerState playerState { get; private set; }
@@ -21,6 +18,8 @@ public class Player : MonoBehaviour, ICombatHook, ICombatContextProvider
     private void Awake()
     {
         playerState = new PlayerState(piv);
+        orders = new Dictionary<CombatPhase, int>();
+        orders[CombatPhase.valueConfirm] = 0;
     }
     private void Start()
     {
@@ -46,7 +45,7 @@ public class Player : MonoBehaviour, ICombatHook, ICombatContextProvider
     {
         switch (phase)
         {
-            case CombatPhase.valueSubmit:
+            case CombatPhase.valueConfirm:
                 //ctx에서 적 공격 수치 읽어서 takedamage 함수 호출
                 break;
         }
@@ -58,7 +57,7 @@ public class Player : MonoBehaviour, ICombatHook, ICombatContextProvider
 
     public bool CanExecute(CombatPhase phase)
     {
-        bool canExecute = true ? phase == CombatPhase.turnEnd : false;
+        bool canExecute = (phase == CombatPhase.valueConfirm);
         return canExecute;
 
     }

@@ -4,20 +4,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class SavingManager : MonoBehaviour, ICombatHook
+public class SavingManager : MonoBehaviour, ICombatHook, ICombatContextProvider
 {
     private Dictionary<CombatPhase, int> orders;
     private List<ISavingRelic> savingRelicList;
+    private SavingContext savingContext;
     [SerializeField]    
     private int maxSavingValue = 20;
     [SerializeField]
     private int maxSavingCount = 3;
+    
     private void Awake()
     {
         orders = new Dictionary<CombatPhase, int>();
         savingRelicList = new List<ISavingRelic>();
+        
         orders[CombatPhase.valueChange] = 1;
-        orders[CombatPhase.valueSubmit] = 1;
+        orders[CombatPhase.valueConfirm] = 3;
     }
     private void Start()
     {
@@ -37,44 +40,45 @@ public class SavingManager : MonoBehaviour, ICombatHook
 
     public void OnCombatPhase(CombatPhase phase, CombatContext ctx)
     {
+        
         switch (phase)
         {
             case CombatPhase.valueChange:
-                SavingContext savingContext = new SavingContext(ctx, ctx.snapshot.saveDice, maxSavingValue, maxSavingCount);
-                EvaluateSingleDice(savingContext);
+                savingContext = new SavingContext(ctx, ctx.snapshot.saveDice, ctx.maxSavingValue, ctx.maxSavingCount);
                 savingContext.savingSnapshot = new SavingSnapshot(savingContext.diceList);
-                EvaluateMultiDice(savingContext);
+                
                 break;
-            case CombatPhase.valueSubmit:
-
+            case CombatPhase.valueConfirm:
+                if (savingContext == null) break; // 어떤 슬롯에도 주사위가 있지 않는 경우 => 그냥 넘김
+                EvaluateSingleDice(savingContext);
+                EvaluateMultiDice(savingContext);
                 break;
         }
     }
+
     private void EvaluateSingleDice(SavingContext ctx)
     {
 
-
+        
         foreach (var diceData in ctx.diceList)
         {
             int doubledValue = diceData.diceValue * 2;
             diceData.diceValue = Mathf.Min(diceData.diceValue * 2, maxSavingValue);
             ctx.dice = diceData;
-            ActivateSingleRelics(ctx);
+
+            var stageRelics = savingRelicList.Where(r => r.Stage == SavingStage.SingleDiceAfterConfirm);
+            foreach (var relic in stageRelics)
+            {
+                relic.Activate(ctx);
+
+            }
         }
     }
 
-    private void ActivateSingleRelics(SavingContext ctx)
-    {
-        var stageRelics = savingRelicList.Where(r => r.Stage == SavingStage.SingleDiceBeforeSubmit);
-        foreach (var relic in stageRelics)
-        {
-            relic.Activate(ctx);
-            
-        }
-    }
+   
     private void EvaluateMultiDice(SavingContext ctx)
     {
-        var stageRelics = savingRelicList.Where(r => r.Stage == SavingStage.MultiDiceBeforeSubmit);
+        var stageRelics = savingRelicList.Where(r => r.Stage == SavingStage.MultiDiceAfterConfirm);
         foreach (var relic in stageRelics)
         {
             relic.Activate(ctx);
@@ -84,12 +88,17 @@ public class SavingManager : MonoBehaviour, ICombatHook
     }
     public bool CanExecute(CombatPhase phase)
     {
-        bool canExecute = phase == CombatPhase.valueChange;
+        bool canExecute = (phase == CombatPhase.valueChange || phase == CombatPhase.valueConfirm);
         return canExecute;
     }
     public int GetOrder(CombatPhase phase)
     {
         return orders.TryGetValue(phase, out int order) ? order : int.MaxValue;
+    }
+    public void ApplyTo(CombatContext ctx)
+    {
+        ctx.maxSavingValue = maxSavingValue;
+        ctx.maxSavingCount = maxSavingCount;
     }
     
 }
@@ -167,8 +176,8 @@ public class SavingSnapshot
 
 public enum SavingStage 
 {
-    SingleDiceBeforeSubmit,
-    MultiDiceBeforeSubmit,
-    AfterSubmit
+    BeforeConfirm,
+    SingleDiceAfterConfirm,
+    MultiDiceAfterConfirm,
 
 }

@@ -9,13 +9,15 @@ public class ComboManager : MonoBehaviour, ICombatHook
     [SerializeField]
     private Dictionary<CombatPhase, int> orders;
     private List<IComboRelic> comboRelicList;
+    private ComboContext attackCtx;
+    private ComboContext defenseCtx;
     private void Awake()
     {
         comboRelicList = new List<IComboRelic>();
         orders = new Dictionary<CombatPhase, int>();
 
         orders[CombatPhase.valueChange] = 0;
-        orders[CombatPhase.valueSubmit] = 0;
+        orders[CombatPhase.valueConfirm] = 2;
     }
 
     private void Start()
@@ -76,10 +78,18 @@ public class ComboManager : MonoBehaviour, ICombatHook
             ctx.tempCandidate = ctx.candidate;
             relic.Activate(ctx);
 
-            // 3. 후보 중 눈의 개수가 더 많은 후보를 고른다.
+            // 3. 후보 중 눈의 개수가 더 많은 후보를 고른다. 같으면 눈이 더 높은 후보를 고른다.
             if (ctx.tempCandidate.Count > ctx.candidate.Count)
             {
                 ctx.candidate = ctx.tempCandidate;
+            }
+
+            if (ctx.tempCandidate.Count == ctx.candidate.Count)
+            {
+                if(ctx.tempCandidate.Eye > ctx.candidate.Eye)
+                {
+                    ctx.candidate = ctx.tempCandidate;
+                }
             }
         }
 
@@ -124,6 +134,7 @@ public class ComboManager : MonoBehaviour, ICombatHook
             if (!ctx.isBaseComboReplaced && relic is IComboEffectReplace)
             {
                 relic.Activate(ctx);
+                Debug.Log(ctx.isBaseComboReplaced);
             }
             else if(relic is not IComboEffectReplace)
             {
@@ -151,9 +162,9 @@ public class ComboManager : MonoBehaviour, ICombatHook
             ctx.combatCtx.snapshot.calcDefenseValue += value;
         }
     }
-    private void ApplyEffectAfterSubmit(ComboContext ctx)
+    private void ApplyEffectAfterConfirm(ComboContext ctx)
     {
-        var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.EffectApply);
+        var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.AfterConfirm);
         foreach (var relic in stageRelics)
         {
             if (!relic.CanAffect(ctx.slotRole))
@@ -165,8 +176,7 @@ public class ComboManager : MonoBehaviour, ICombatHook
     }
     public void OnCombatPhase(CombatPhase phase, CombatContext ctx)
     {
-        ComboContext attackCtx = null;
-        ComboContext defenseCtx = null;
+        
         switch (phase)
         {
             case CombatPhase.valueChange:
@@ -182,12 +192,14 @@ public class ComboManager : MonoBehaviour, ICombatHook
                 ModifyCandidateAfterBuild(attackCtx);
                 ModifyCandidateAfterBuild(defenseCtx);
 
+          
                 ApplyComboEffect(attackCtx);
-                ApplyComboEffect(defenseCtx);
+                //ApplyComboEffect(defenseCtx);
                 break;
-            case CombatPhase.valueSubmit: 
-                ApplyEffectAfterSubmit(attackCtx);
-                ApplyEffectAfterSubmit(defenseCtx); 
+            case CombatPhase.valueConfirm:
+                if (attackCtx == null && defenseCtx == null) break; // 어떤 슬롯에도 주사위가 없는 경우 => 그냥 넘김
+                ApplyEffectAfterConfirm(attackCtx);
+                ApplyEffectAfterConfirm(defenseCtx); 
                 
                 break;
 
@@ -201,7 +213,7 @@ public class ComboManager : MonoBehaviour, ICombatHook
     }
     public bool CanExecute(CombatPhase phase)
     {
-        bool canExecute = phase == CombatPhase.valueChange;
+        bool canExecute = (phase == CombatPhase.valueChange || phase == CombatPhase.valueConfirm);
         return canExecute;
     }
 }
@@ -253,7 +265,7 @@ public enum ComboStage
     BuildCandidate, 
     CandidateModify,
     EffectApply,
-    AfterSubmit
+    AfterConfirm
 }
 
 

@@ -315,7 +315,7 @@ public class Relic_18 : ComboRelicEffectBase
 {
     public Relic_18() : base(18) { }
 
-    public override ComboStage Stage => ComboStage.AfterSubmit;
+    public override ComboStage Stage => ComboStage.AfterConfirm;
 
     public override void Activate(ComboContext ctx)
     {
@@ -357,6 +357,7 @@ public class Relic_25 : ComboRelicEffectBase, IComboEffectReplace
 
     public override void Activate(ComboContext ctx)
     {
+        Debug.Log("후보의 눈은" + ctx.candidate.Eye + "후보의 개수는"+ ctx.candidate.Count);
         if (ctx.candidate.Eye == 2 && ctx.candidate.Count > 0)
         {
             int value = (int)Mathf.Pow(2, ctx.candidate.Count - 1);
@@ -367,7 +368,11 @@ public class Relic_25 : ComboRelicEffectBase, IComboEffectReplace
                 ctx.combatCtx.snapshot.calcDefenseValue += value;
             ctx.isBaseComboReplaced = true;
         }
-        ctx.isBaseComboReplaced = false;
+        else
+        {
+            ctx.isBaseComboReplaced = false;
+        }
+            
         
     }
 }
@@ -378,7 +383,7 @@ public class Relic_27 : ComboRelicEffectBase
 {
     public Relic_27() : base(27) { }
 
-    public override ComboStage Stage => ComboStage.AfterSubmit;
+    public override ComboStage Stage => ComboStage.AfterConfirm;
 
     public override void Activate(ComboContext ctx)
     {
@@ -414,7 +419,7 @@ public class Relic_3 : SavingRelicEffectBase
 {
     public Relic_3() : base(3) { }
 
-    public override SavingStage Stage => SavingStage.AfterSubmit;
+    public override SavingStage Stage => SavingStage.MultiDiceAfterConfirm;
 
     public override void Activate(SavingContext ctx)
     {
@@ -440,7 +445,7 @@ public class Relic_19 : SavingRelicEffectBase
 {
     public Relic_19() : base(19) { }
 
-    public override SavingStage Stage => SavingStage.AfterSubmit;
+    public override SavingStage Stage => SavingStage.MultiDiceAfterConfirm;
 
     public override void Activate(SavingContext ctx)
     {
@@ -467,7 +472,7 @@ public class Relic_30 : SavingRelicEffectBase
 {
     public Relic_30() : base(30) { }
 
-    public override SavingStage Stage => SavingStage.AfterSubmit;
+    public override SavingStage Stage => SavingStage.SingleDiceAfterConfirm;
 
     public override void Activate(SavingContext ctx)
     {

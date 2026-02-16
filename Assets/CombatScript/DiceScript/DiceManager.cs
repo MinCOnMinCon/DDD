@@ -28,7 +28,7 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
         diceState = new DiceState(div); 
         orders = new Dictionary<CombatPhase, int>();
         orders.Add(CombatPhase.turnStart, 0);
-        orders.Add(CombatPhase.turnEnd, 0);
+        orders.Add(CombatPhase.turnEnd, 2);
     }
 
     private void Start()
@@ -48,7 +48,7 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
         }
         if (Input.GetKeyDown(KeyCode.S))
         {
-            FirstDiceCreate();
+            TurnStartDiceGenerate();
         }
     }
 
@@ -56,7 +56,7 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
     /// 굴림 버튼을 눌렀을 때, 실제로 더 필요한 만큼 기본주사위와 패널티주사위, 대출 주사위를 생성하고 
     /// 리스트의 모든 주사위를 돌림
     /// </summary>
-    public void FirstDiceCreate()
+    public void TurnStartDiceGenerate()
     {
         int neededBasicDice = diceState.basicDiceNum - diceState.basicDiceList.Count;
         int neededPenaltyDice = diceState.penaltyDiceNum - diceState.penaltyDiceList.Count;
@@ -219,7 +219,7 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
         switch (phase)
         {
             case CombatPhase.turnStart:
-                
+                TurnStartDiceGenerate();
                 break;
             case CombatPhase.turnEnd:
                 CheckDiceSpan();
@@ -233,7 +233,7 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
     }
     public bool CanExecute(CombatPhase phase)
     {
-        bool canExecute = phase == CombatPhase.turnStart || phase == CombatPhase.turnEnd;
+        bool canExecute = (phase == CombatPhase.turnStart || phase == CombatPhase.turnEnd);
         return canExecute;
     }
     public void ApplyTo(CombatContext ctx)

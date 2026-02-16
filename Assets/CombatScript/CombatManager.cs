@@ -8,12 +8,18 @@ public class CombatManager : MonoBehaviour
 {
     public CombatContext combatContext { get; private set; }
     public static CombatManager inst { get; private set; }
-    private List<ICombatHook> combatHooks = new List<ICombatHook>();
+    private List<ICombatHook> combatHooks;
+    private bool isTurnStart;
+    private bool isValueConfirm;
+
 
     private List<DiceSlot> allDiceSlots;
     private void Awake()
     {
         inst = this;
+        isValueConfirm = false;
+        isTurnStart = false;
+        combatHooks = new List<ICombatHook>();
         combatContext = new CombatContext();
         allDiceSlots = new List<DiceSlot>();
     }
@@ -40,10 +46,28 @@ public class CombatManager : MonoBehaviour
         }
     }
 
+    public void ConfirmValue()
+    {
+        if (isValueConfirm) return;
+
+        isValueConfirm = true;
+        ActivateHook(CombatPhase.valueConfirm);
+        TurnEnd();
+    }
 
     public void TurnStart()
     {
+        if(isTurnStart) return; 
+        
+        isTurnStart = true;
         ActivateHook(CombatPhase.turnStart);
+    }
+    public void TurnEnd()
+    {
+        ActivateHook(CombatPhase.turnEnd);
+
+        isTurnStart = false;
+        isValueConfirm = false;
     }
     public void HookRegister(ICombatHook hook)
     {
@@ -67,10 +91,15 @@ public class CombatManager : MonoBehaviour
         }
     }
 }
+/// <summary>
+/// 전투에서 사용하는 컨텍스트
+/// 
+/// </summary>
 public class CombatContext 
 {
     public DiceState diceState { get;  set; }
     public PlayerState playerState { get; set; }
+    //public EnemyState enemyState { get; set; }
 
     public List<GameObject> attackSlotDiceList { get;  set; }
     public List<GameObject> defenseSlotDiceList { get;  set; }
@@ -79,6 +108,9 @@ public class CombatContext
     public int baseAttackValue;
     public int baseDefenseValue;
     public int turnCount;
+
+    public int maxSavingValue;
+    public int maxSavingCount;
 
     public CombatContextSnapshot snapshot { get; set; }
     public IDiceService diceFactory;
@@ -124,6 +156,8 @@ public class CombatContextSnapshot
     public int loanDiceCount;
 
     public int turnCount;
+
+    
 }
 public static class CombatContextSnapshotFactory
 {
@@ -169,9 +203,8 @@ public enum CombatPhase
 { 
     combatStart,
     turnStart,
-    loan,
     valueChange,
-    valueSubmit,
+    valueConfirm,
     turnEnd,
     combatEnd
 }
