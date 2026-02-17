@@ -167,6 +167,8 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
         
         for(int idx = 0; idx < diceList.Count; idx++) // 기존에 생성된 주사위를 다시 굴림
         {
+            if (diceList[idx].GetComponent<Dice>().diceData.curSlotRole == DiceSlotRole.Saving) continue;
+            //위 줄은 주사위가 만약 savingSlot에 있다면 reroll 하지 않게 만듦.
             diceList[idx].transform.localPosition = diceSpawnPos;
             diceList[idx].GetComponent<Dice>().DiceReset(RollDice(weightList));
         }

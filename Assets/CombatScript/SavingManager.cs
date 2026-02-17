@@ -32,8 +32,8 @@ public class SavingManager : MonoBehaviour, ICombatHook, ICombatContextProvider
         {
             savingRelicList.Add(effect);
         }
-      
-  
+
+        ApplyTo(CombatManager.inst.combatContext);
         CombatManager.inst.HookRegister(this);
     }
 
@@ -44,8 +44,8 @@ public class SavingManager : MonoBehaviour, ICombatHook, ICombatContextProvider
         switch (phase)
         {
             case CombatPhase.valueChange:
-                savingContext = new SavingContext(ctx, ctx.snapshot.saveDice, ctx.maxSavingValue, ctx.maxSavingCount);
-                savingContext.savingSnapshot = new SavingSnapshot(savingContext.diceList);
+                savingContext = new SavingContext(ctx, ctx.savingSlotDiceList, ctx.maxSavingValue, ctx.maxSavingCount);
+                savingContext.savingSnapshot = new SavingSnapshot(DiceDataBuilder.BuildDiceDataList(savingContext.diceObjectList));
                 
                 break;
             case CombatPhase.valueConfirm:
@@ -60,10 +60,11 @@ public class SavingManager : MonoBehaviour, ICombatHook, ICombatContextProvider
     {
 
         
-        foreach (var diceData in ctx.diceList)
+        foreach (var diceObject in ctx.diceObjectList)
         {
+            DiceData diceData = diceObject.GetComponent<Dice>().diceData;
             int doubledValue = diceData.diceValue * 2;
-            diceData.diceValue = Mathf.Min(diceData.diceValue * 2, maxSavingValue);
+            diceData.SetValue(Mathf.Min(diceData.diceValue * 2, ctx.maxSavingValue));
             ctx.dice = diceData;
 
             var stageRelics = savingRelicList.Where(r => r.Stage == SavingStage.SingleDiceAfterConfirm);
@@ -72,6 +73,7 @@ public class SavingManager : MonoBehaviour, ICombatHook, ICombatContextProvider
                 relic.Activate(ctx);
 
             }
+            Debug.Log("현재 주사위의 수치 " + ctx.dice.diceValue);
         }
     }
 
@@ -104,28 +106,30 @@ public class SavingManager : MonoBehaviour, ICombatHook, ICombatContextProvider
 }
 /// <summary>
 /// 턴 종료 시 '저축 효과 및 유물 효과를 적용' 시키기 용이하게 하기 위한 클래스
+/// value, combo 컨텍스트와 달리 saving 컨텍스트는 주사위 리스트가 복사가 아닌 실제 주사위를 가르키는 GameObject 리스트이다.
+/// 얘네는 나중에 사라지면 안되기 때문이다.
 /// </summary>
 public class SavingContext
 {
     public CombatContext combatContext { get; }
     public SavingSnapshot savingSnapshot;
-    public List<DiceData> diceList;
+    public List<GameObject> diceObjectList;
     public int maxSavingValue;
     public int maxSavingCount;
 
     // SingleDice용
     public DiceData dice;
 
-    public SavingContext(CombatContext combatContext, List<DiceData> diceList, int value, int count)
+    public SavingContext(CombatContext combatContext, List<GameObject> diceObjectList, int value, int count)
     {
         this.combatContext = combatContext;
-        this.diceList = diceList;
+        this.diceObjectList = diceObjectList;
         this.maxSavingCount = count;
         this.maxSavingValue = value;
     }
 
 }
-public interface ISavingRelic : IRelic
+public interface ISavingRelic 
 {
     SavingStage Stage { get; }
     void Activate(SavingContext ctx);

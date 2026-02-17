@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR;
 
 public enum DiceType
 {
@@ -44,7 +45,8 @@ public class Dice : MonoBehaviour
         diceRigidbody.linearVelocity = Vector2.zero;
         ClearEyes();
 
-        diceData.setEye(eye);
+        diceData.SetEye(eye);
+        diceData.SetValue(eye);
         SpawnEyes(eye);
        
     }
@@ -208,17 +210,28 @@ public class DiceData
     {
         diceSpan = span;
         diceType = type;
+        curSlotRole = DiceSlotRole.Null;
     }
 
-    public void setEye(int eye)
+    public void SetEye(int eye)
     {
         diceEye = eye;
-        diceValue = eye;
+    }
+    public void SetValue(int value)
+    {
+        diceValue = value;
+    }
+    public void SetSlotRole(DiceSlotRole role)
+    {
+        this.curSlotRole = role;
     }
 
     public int diceEye { get; private set; }
-    public int diceValue { get; set; }
+    
+    public int diceValue { get; private set; }
     public DiceType diceType { get; private set; }
 
     public int diceSpan;
+
+    public DiceSlotRole curSlotRole { get; private set; }
 }

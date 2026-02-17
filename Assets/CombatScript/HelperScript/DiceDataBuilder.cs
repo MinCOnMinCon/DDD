@@ -25,7 +25,8 @@ public class DiceDataBuilder : MonoBehaviour
             if (diceComp == null) continue;
 
             DiceData temp = new DiceData(diceComp.diceData.diceSpan, diceComp.diceData.diceType);
-            temp.setEye(diceComp.diceData.diceEye);
+            temp.SetEye(diceComp.diceData.diceEye);
+            temp.SetValue(diceComp.diceData.diceValue);
             result.Add(temp);
         }
 

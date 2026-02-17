@@ -6,7 +6,7 @@ using System.Linq;
 
 public class ComboManager : MonoBehaviour, ICombatHook
 {
-    [SerializeField]
+   
     private Dictionary<CombatPhase, int> orders;
     private List<IComboRelic> comboRelicList;
     private ComboContext attackCtx;
@@ -53,8 +53,7 @@ public class ComboManager : MonoBehaviour, ICombatHook
         var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.CreateSnapshot);
         foreach (var relic in stageRelics)
         {
-            if (!relic.CanAffect(ctx.slotRole))
-                continue;
+           
 
             relic.Activate(ctx);
 
@@ -72,8 +71,7 @@ public class ComboManager : MonoBehaviour, ICombatHook
         // 2. 콤보 관여 유물 적용
         foreach (var relic in stageRelics)
         {
-            if (!relic.CanAffect(ctx.slotRole))
-                continue;
+           
 
             ctx.tempCandidate = ctx.candidate;
             relic.Activate(ctx);
@@ -96,16 +94,17 @@ public class ComboManager : MonoBehaviour, ICombatHook
     }
     private ComboCandidate GetBaseCandidate(int[] eyeCounts)
     {
-        int bestEye = 1;
-        int bestCount = eyeCounts[0];
+        int bestEye = 6;
+        int bestCount = eyeCounts[5];
 
-        for (int i = 1; i < 6; i++)
+        for (int i = 4; i >= 0; i--)
         {
             if (eyeCounts[i] > bestCount)
             {
                 bestCount = eyeCounts[i];
                 bestEye = i + 1;
             }
+            
         }
 
         return new ComboCandidate(bestEye, bestCount);
@@ -115,8 +114,7 @@ public class ComboManager : MonoBehaviour, ICombatHook
         var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.CandidateModify);
         foreach (var relic in stageRelics)
         {
-            if (!relic.CanAffect(ctx.slotRole))
-                continue;
+            
 
             relic.Activate(ctx);
 
@@ -128,8 +126,7 @@ public class ComboManager : MonoBehaviour, ICombatHook
         var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.EffectApply);
         foreach (var relic in stageRelics)
         {
-            if (!relic.CanAffect(ctx.slotRole))
-                continue;
+            
 
             if (!ctx.isBaseComboReplaced && relic is IComboEffectReplace)
             {
@@ -167,8 +164,7 @@ public class ComboManager : MonoBehaviour, ICombatHook
         var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.AfterConfirm);
         foreach (var relic in stageRelics)
         {
-            if (!relic.CanAffect(ctx.slotRole))
-                continue;
+           
 
             relic.Activate(ctx);
         }
@@ -222,7 +218,7 @@ public class ComboManager : MonoBehaviour, ICombatHook
 /// 기본 콤보 효과를 대체하는 유물이 상속하는 인터페이스
 /// </summary>
 public interface IComboEffectReplace { } 
-public interface IComboRelic : IRelic
+public interface IComboRelic
 {
     ComboStage Stage { get; }
     

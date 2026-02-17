@@ -7,8 +7,6 @@ public abstract class ValueRelicEffectBase : RelicEffect, IValueRelic
 
     protected ValueRelicEffectBase(int relicId) : base(relicId) { }
 
-    public virtual bool CanAffect(DiceSlotRole slotRole) => true;
-
     public abstract void Activate(ValueContext ctx);
 }
 
@@ -23,7 +21,7 @@ public class Relic_6 : ValueRelicEffectBase
     {
         if (ctx.dice.diceType == DiceType.penalty)
         {
-            ctx.dice.diceValue = -ctx.dice.diceValue;
+            ctx.dice.SetValue(-ctx.dice.diceValue);
         }
     }
 }
@@ -36,7 +34,7 @@ public class Relic_22 : ValueRelicEffectBase
     public override void Activate(ValueContext ctx)
     {
         if (ctx.dice.diceEye <= 3)
-            ctx.dice.diceValue += 2;
+            ctx.dice.SetValue(ctx.dice.diceValue + 2);
     }
 }
 
@@ -48,9 +46,9 @@ public class Relic_31 : ValueRelicEffectBase
     public override void Activate(ValueContext ctx)
     {
         if (ctx.dice.diceEye == 1)
-            ctx.dice.diceValue += 10;
+            ctx.dice.SetValue(ctx.dice.diceValue + 10);
         else
-            ctx.dice.diceValue -= 2;
+            ctx.dice.SetValue(ctx.dice.diceValue - 2);
     }
 }
 
@@ -62,7 +60,7 @@ public class Relic_32 : ValueRelicEffectBase
     public override void Activate(ValueContext ctx)
     {
         if (ctx.dice.diceType == DiceType.loan)
-            ctx.dice.diceValue += 2;
+            ctx.dice.SetValue(ctx.dice.diceValue + 2);
     }
 }
 
@@ -180,7 +178,6 @@ public abstract class ComboRelicEffectBase : RelicEffect, IComboRelic
 
     protected ComboRelicEffectBase(int relicId) : base(relicId) { }
 
-    public virtual bool CanAffect(DiceSlotRole slotRole) => true;
 
     public abstract void Activate(ComboContext ctx);
 }
@@ -403,8 +400,6 @@ public abstract class SavingRelicEffectBase : RelicEffect, ISavingRelic
 
     protected SavingRelicEffectBase(int relicId) : base(relicId) { }
 
-    public virtual bool CanAffect(DiceSlotRole slotRole) => true;
-
     public abstract void Activate(SavingContext ctx);
 }
 
@@ -426,9 +421,9 @@ public class Relic_3 : SavingRelicEffectBase
         if (ctx.savingSnapshot.IsFullyFilled(ctx.maxSavingCount) &&
             ctx.savingSnapshot.IsAllSameEye())
         {
-            foreach (var dice in ctx.diceList)
+            foreach (var diceObject in ctx.diceObjectList)
             {
-                dice.diceValue = ctx.maxSavingValue;
+                diceObject.GetComponent<Dice>().diceData.SetValue(ctx.maxSavingValue);
             }
         }
     }
@@ -478,7 +473,37 @@ public class Relic_30 : SavingRelicEffectBase
     {
         if (ctx.dice.diceEye == 5)
         {
-            ctx.dice.diceValue = ctx.maxSavingValue;
+            ctx.dice.SetValue(ctx.maxSavingValue);
+
         }
+    }
+}
+
+public abstract class CombatStartRelicEffectBase : RelicEffect, ICombatStartRelic
+{
+    
+
+    protected CombatStartRelicEffectBase(int relicId) : base(relicId) { }
+
+    public abstract void Activate(CombatContext ctx);
+}
+
+public class Relic_1 : CombatStartRelicEffectBase
+{
+    public Relic_1() : base(1) { }
+
+    public override void Activate(CombatContext ctx)
+    {
+        // 컨텍스트의 대출 주사위 스팬 int.MaxValue로 변환
+    }
+}
+
+public class Relic_5 : CombatStartRelicEffectBase
+{
+    public Relic_5() : base(5) { }
+
+    public override void Activate(CombatContext ctx)
+    {
+        ctx.maxSavingValue = 30;
     }
 }

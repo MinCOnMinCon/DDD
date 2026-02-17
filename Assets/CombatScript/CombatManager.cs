@@ -23,6 +23,7 @@ public class CombatManager : MonoBehaviour
         combatContext = new CombatContext();
         allDiceSlots = new List<DiceSlot>();
     }
+    
 
     public void CommitSlotChanges()
     {
@@ -54,11 +55,14 @@ public class CombatManager : MonoBehaviour
         ActivateHook(CombatPhase.valueConfirm);
         TurnEnd();
     }
-
+    public void CombatStart()
+    {
+        ActivateHook(CombatPhase.combatStart);
+    }
     public void TurnStart()
     {
-        if(isTurnStart) return; 
-        
+        if(isTurnStart) return;
+        CombatStart(); // 테스트를 위한 임시 코드
         isTurnStart = true;
         ActivateHook(CombatPhase.turnStart);
     }

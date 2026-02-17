@@ -43,7 +43,12 @@ public class RelicManager : MonoBehaviour
         // ======================
         { 3,  () => new Relic_3() },
         { 19, () => new Relic_19() },
-        { 30, () => new Relic_30() }
+        { 30, () => new Relic_30() },
+        // ======================
+        // CombatStart Relics
+        // ======================
+        { 1, () => new Relic_1() },
+        { 5, () => new Relic_5() },
         };
 
     private void Awake()
@@ -93,14 +98,7 @@ public abstract class RelicEffect
     
 }
 
-/// <summary>
-/// 유물의 공동적인 함수를 담고 있는 인터페이스. 
-/// 유물이면 다 똑같이 가져야 하는 함수를 담고 있고 유물이라면 이 인터페이스를 상속받아야 한다.
-/// </summary>
-public interface IRelic
-{
-    bool CanAffect(DiceSlotRole slotRole);
-}
+
 
 public class CombatRelicContext
 {

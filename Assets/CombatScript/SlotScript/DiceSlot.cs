@@ -33,10 +33,7 @@ public class DiceSlot : MonoBehaviour, ICombatContextProvider
         {
             enteredDiceList.Add(collision.gameObject);
             isIn = true;
-            if(role == DiceSlotRole.Saving)
-            {
-               ApplyTo(CombatManager.inst.combatContext);
-            }
+            collision.gameObject.GetComponent<Dice>().diceData.SetSlotRole(role);
             CombatManager.inst.CommitSlotChanges();
 
 
@@ -49,10 +46,7 @@ public class DiceSlot : MonoBehaviour, ICombatContextProvider
         {
             enteredDiceList.Remove(collision.gameObject);
             isOut = true;
-            if (role == DiceSlotRole.Saving)
-            {
-                ApplyTo(CombatManager.inst.combatContext);
-            }
+            collision.gameObject.GetComponent<Dice>().diceData.SetSlotRole(DiceSlotRole.Null);
             CombatManager.inst.CommitSlotChanges();
 
 
@@ -75,7 +69,7 @@ public class DiceSlot : MonoBehaviour, ICombatContextProvider
                 ctx.savingSlotDiceList = new List<GameObject>(enteredDiceList);
                 break;
         }
-    } // ctx에 존재하는 diceSlotlist는 최초 호출 시 적어도 하나는 null 상태다. 왜냐하면 
+    } 
     public bool ConsumeFlag()
     {
         bool flag;
@@ -97,5 +91,6 @@ public enum DiceSlotRole
 {
     Attack,
     Defense,
-    Saving
+    Saving,
+    Null
 }

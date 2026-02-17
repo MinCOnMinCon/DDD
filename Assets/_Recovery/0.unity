@@ -132,6 +132,9 @@ GameObject:
   - component: {fileID: 11227863}
   - component: {fileID: 11227862}
   - component: {fileID: 11227861}
+  - component: {fileID: 11227866}
+  - component: {fileID: 11227865}
+  - component: {fileID: 11227864}
   m_Layer: 0
   m_Name: CombatManager
   m_TagString: Untagged
@@ -204,6 +207,42 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SavingManager
   maxSavingValue: 20
   maxSavingCount: 3
+--- !u!114 &11227864
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 11227858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f29c6a1165ec0004694213d7081a299a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TurnStartEffectManager
+--- !u!114 &11227865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 11227858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdad9e3a95b377a47b9f0310e73797c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TurnEndEffectManager
+--- !u!114 &11227866
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 11227858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d2ad3c1fa9763040899ce87a4b9fbc8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CombatStartManager
 --- !u!1 &312987029
 GameObject:
   m_ObjectHideFlags: 0
@@ -528,6 +567,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2cea6081f31b6f8438bd20430f997c11, type: 2}
   - {fileID: 11400000, guid: 0cf5cae92ceb73940be7824b7395eb2b, type: 2}
   - {fileID: 11400000, guid: d8683846d7f22754181cb4a2b2022ede, type: 2}
+  - {fileID: 11400000, guid: 442eab54426cad8449a838a0408827a0, type: 2}
+  - {fileID: 11400000, guid: 2180f552b5dbd074d8691a1ff03a4e7e, type: 2}
 --- !u!114 &415948725
 MonoBehaviour:
   m_ObjectHideFlags: 0

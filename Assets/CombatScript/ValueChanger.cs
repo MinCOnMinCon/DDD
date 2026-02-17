@@ -39,8 +39,7 @@ public class ValueChanger : MonoBehaviour, ICombatHook
             var stageRelics = valueRelicList.Where(r => r.Stage == ValueStage.ValueApply);
             foreach (var relic in stageRelics)
             {
-                if (!relic.CanAffect(ctx.slotRole))
-                    continue;
+                
                 ctx.dice = dice;
                 relic.Activate(ctx);
 
@@ -134,8 +133,7 @@ public class ValueChanger : MonoBehaviour, ICombatHook
         var stageRelics = valueRelicList.Where(r => r.Stage == ValueStage.ValueConditionCheck);
         foreach (var relic in stageRelics)
         {
-            if (!relic.CanAffect(ctx.slotRole))
-                continue;
+            
 
             relic.Activate(ctx);
         }
@@ -193,7 +191,7 @@ public class ValueChanger : MonoBehaviour, ICombatHook
 
 }
 
-public interface IValueRelic : IRelic
+public interface IValueRelic 
 {
     ValueStage Stage { get; }
     public void Activate(ValueContext ctx);
