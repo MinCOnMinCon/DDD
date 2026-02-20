@@ -103,7 +103,7 @@ public class CombatContext
 {
     public DiceState diceState { get;  set; }
     public PlayerState playerState { get; set; }
-    //public EnemyState enemyState { get; set; }
+    public EnemyState enemyState { get; set; }
 
     public List<GameObject> attackSlotDiceList { get;  set; }
     public List<GameObject> defenseSlotDiceList { get;  set; }
