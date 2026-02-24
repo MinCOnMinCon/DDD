@@ -49,7 +49,7 @@ public class SavingManager : MonoBehaviour, ICombatHook, ICombatContextProvider
                 
                 break;
             case CombatPhase.valueConfirm:
-                if (savingContext == null) break; // ¾î¶² ½½·Ô¿¡µµ ÁÖ»çÀ§°¡ ÀÖÁö ¾Ê´Â °æ¿ì => ±×³É ³Ñ±è
+                if (savingContext == null) break; // ï¿½î¶² ï¿½ï¿½ï¿½Ô¿ï¿½ï¿½ï¿½ ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´ï¿½ ï¿½ï¿½ï¿½ => ï¿½×³ï¿½ ï¿½Ñ±ï¿½
                 EvaluateSingleDice(savingContext);
                 EvaluateMultiDice(savingContext);
                 break;
@@ -73,7 +73,7 @@ public class SavingManager : MonoBehaviour, ICombatHook, ICombatContextProvider
                 relic.Activate(ctx);
 
             }
-            Debug.Log("ÇöÀç ÁÖ»çÀ§ÀÇ ¼öÄ¡ " + ctx.dice.diceValue);
+            Debug.Log("ï¿½ï¿½ï¿½ï¿½ ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ " + ctx.dice.diceValue);
         }
     }
 
@@ -90,7 +90,7 @@ public class SavingManager : MonoBehaviour, ICombatHook, ICombatContextProvider
     }
     public bool CanExecute(CombatPhase phase)
     {
-        bool canExecute = (phase == CombatPhase.valueChange || phase == CombatPhase.valueConfirm);
+        bool canExecute = orders.ContainsKey(phase);
         return canExecute;
     }
     public int GetOrder(CombatPhase phase)
@@ -105,9 +105,9 @@ public class SavingManager : MonoBehaviour, ICombatHook, ICombatContextProvider
     
 }
 /// <summary>
-/// ÅÏ Á¾·á ½Ã 'ÀúÃà È¿°ú ¹× À¯¹° È¿°ú¸¦ Àû¿ë' ½ÃÅ°±â ¿ëÀÌÇÏ°Ô ÇÏ±â À§ÇÑ Å¬·¡½º
-/// value, combo ÄÁÅØ½ºÆ®¿Í ´Þ¸® saving ÄÁÅØ½ºÆ®´Â ÁÖ»çÀ§ ¸®½ºÆ®°¡ º¹»ç°¡ ¾Æ´Ñ ½ÇÁ¦ ÁÖ»çÀ§¸¦ °¡¸£Å°´Â GameObject ¸®½ºÆ®ÀÌ´Ù.
-/// ¾ê³×´Â ³ªÁß¿¡ »ç¶óÁö¸é ¾ÈµÇ±â ¶§¹®ÀÌ´Ù.
+/// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ 'ï¿½ï¿½ï¿½ï¿½ È¿ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È¿ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½' ï¿½ï¿½Å°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
+/// value, combo ï¿½ï¿½ï¿½Ø½ï¿½Æ®ï¿½ï¿½ ï¿½Þ¸ï¿½ saving ï¿½ï¿½ï¿½Ø½ï¿½Æ®ï¿½ï¿½ ï¿½Ö»ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ç°¡ ï¿½Æ´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Å°ï¿½ï¿½ GameObject ï¿½ï¿½ï¿½ï¿½Æ®ï¿½Ì´ï¿½.
+/// ï¿½ï¿½×´ï¿½ ï¿½ï¿½ï¿½ß¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ÈµÇ±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ì´ï¿½.
 /// </summary>
 public class SavingContext
 {
@@ -117,7 +117,7 @@ public class SavingContext
     public int maxSavingValue;
     public int maxSavingCount;
 
-    // SingleDice¿ë
+    // SingleDiceï¿½ï¿½
     public DiceData dice;
 
     public SavingContext(CombatContext combatContext, List<GameObject> diceObjectList, int value, int count)
@@ -135,7 +135,7 @@ public interface ISavingRelic
     void Activate(SavingContext ctx);
 }
 /// <summary>
-/// ÀúÃà °ü·Ã À¯¹°ÀÇ 'Á¶°Ç Ã¼Å©'¸¦ ¿ëÀÌÇÏ°Ô ÇÏ±â À§ÇØ ¸¸µç Å¬·¡½º
+/// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 'ï¿½ï¿½ï¿½ï¿½ Ã¼Å©'ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
 /// </summary>
 public class SavingSnapshot 
 {

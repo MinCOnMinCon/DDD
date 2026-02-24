@@ -71,7 +71,7 @@ public class ValueChanger : MonoBehaviour, ICombatHook
         {
             snapshot.totalDiceCount++;
             
-            // Å¸ÀÔº° Ä«¿îÆ®
+            // Å¸ï¿½Ôºï¿½ Ä«ï¿½ï¿½Æ®
             switch (dice.diceType)
             {
                 case DiceType.basic:
@@ -85,11 +85,11 @@ public class ValueChanger : MonoBehaviour, ICombatHook
                     break;
             }
 
-            // Å¸ÀÔº° ¸®½ºÆ® ÃÊ±âÈ­
+            // Å¸ï¿½Ôºï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ê±ï¿½È­
             if (!snapshot.diceByType.ContainsKey(dice.diceType))
                 snapshot.diceByType[dice.diceType] = new List<DiceInfo>();
 
-            // DiceInfo Ãß°¡
+            // DiceInfo ï¿½ß°ï¿½
             snapshot.diceByType[dice.diceType].Add(new DiceInfo
             {
                 eye = dice.diceEye,
@@ -97,7 +97,7 @@ public class ValueChanger : MonoBehaviour, ICombatHook
                 type = dice.diceType
             });
 
-            // EyeSummary ÃÊ±âÈ­
+            // EyeSummary ï¿½Ê±ï¿½È­
             if (!snapshot.eyeMap.TryGetValue(dice.diceEye, out var eyeSummary))
             {
                 eyeSummary = new EyeSummary
@@ -107,7 +107,7 @@ public class ValueChanger : MonoBehaviour, ICombatHook
                 snapshot.eyeMap[dice.diceEye] = eyeSummary;
             }
 
-            // EyeSummary Áý°è
+            // EyeSummary ï¿½ï¿½ï¿½ï¿½
             eyeSummary.totalCount++;
             eyeSummary.totalValueSum += dice.diceValue;
 
@@ -167,8 +167,8 @@ public class ValueChanger : MonoBehaviour, ICombatHook
                 ApplyConditionalRelics(defenseValueContext);
 
                 ApplyFinalValueRelics(attackValueContext);
-                // ÀÌ ÇÔ¼ö´Â ÄÄ¹î ÄÁÅØ½ºÆ®¿¡¼­ ÃÑ °ø°Ý°ú ¹æ¾î ¼öÄ¡¸¸ ¾Ë¸é µÇ±â¿¡ ±»ÀÌ attack, defense value context µÎ°³¸¦ ¸Å°³·Î ºÎ¸¦ ÇÊ¿ä´Â ¾ø´Ù.
-                // ¾îÂ÷ÇÇ valueContext¿¡´Â combat Context°¡ ÀÖ±â ¶§¹®.
+                // ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½Ä¹ï¿½ ï¿½ï¿½ï¿½Ø½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ý°ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Ë¸ï¿½ ï¿½Ç±â¿¡ ï¿½ï¿½ï¿½ï¿½ attack, defense value context ï¿½Î°ï¿½ï¿½ï¿½ ï¿½Å°ï¿½ï¿½ï¿½ ï¿½Î¸ï¿½ ï¿½Ê¿ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ valueContextï¿½ï¿½ï¿½ï¿½ combat Contextï¿½ï¿½ ï¿½Ö±ï¿½ ï¿½ï¿½ï¿½ï¿½.
                 break;
         }
 
@@ -180,7 +180,7 @@ public class ValueChanger : MonoBehaviour, ICombatHook
     }
     public bool CanExecute(CombatPhase phase)
     {
-        bool canExecute = phase == CombatPhase.valueChange;
+        bool canExecute = orders.ContainsKey(phase);
         return canExecute;
     }
 
@@ -203,7 +203,7 @@ public class ValueContext
     public DiceSlotRole slotRole { get; }
 
     public List<DiceData> diceList { get; }
-    public DiceData dice; // ValueApply Stage¿¡¼­ È¿°ú¸¦ ¹ÞÀ» ÁÖ»çÀ§. diceListÀÇ ÁÖ»çÀ§°¡ dice¿¡ ÇÑ¹ø¾¿ µé¾î°¨
+    public DiceData dice; // ValueApply Stageï¿½ï¿½ï¿½ï¿½ È¿ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö»ï¿½ï¿½ï¿½. diceListï¿½ï¿½ ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ diceï¿½ï¿½ ï¿½Ñ¹ï¿½ï¿½ï¿½ ï¿½ï¿½î°¨
 
     public SlotSnapshot slotSnapshot { set;  get; }
     public ValueContext(

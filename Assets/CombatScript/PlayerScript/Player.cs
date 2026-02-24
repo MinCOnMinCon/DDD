@@ -20,33 +20,39 @@ public class Player : MonoBehaviour, ICombatHook, ICombatContextProvider
         playerState = new PlayerState(piv);
         orders = new Dictionary<CombatPhase, int>();
         orders[CombatPhase.valueConfirm] = 0;
+        orders[CombatPhase.combatStart] = 1;
     }
     private void Start()
     {
         CombatManager.inst.HookRegister(this);
-        ApplyTo(CombatManager.inst.combatContext);
-
     }
-
-    public void TakeDamage(int damage, CombatContext ctx)
+    public void TakeDamage(CombatContext ctx)
     {
-        playerState.hp -= damage;
-        if (playerState.hp <= 0)
+        int playerDefVal = ctx.snapshot.baseDefenseValue + ctx.snapshot.calcDefenseValue;
+        ctx.playerState.hp += playerDefVal - ctx.enemyState.currentAttackValue;
+        if (ctx.playerState.hp <= 0)
         {
-            OnPlayerDied?.Invoke();
+            Die();
         }
-        OnPlayerDamaged?.Invoke();
-    }
 
-    public event Action OnPlayerDied;
-    public event Action OnPlayerDamaged;
+    }
+    
+    private void Die()
+    {
+
+    }
+    
 
     public void OnCombatPhase(CombatPhase phase, CombatContext ctx)
     {
         switch (phase)
         {
             case CombatPhase.valueConfirm:
-                //ctx에서 적 공격 수치 읽어서 takedamage 함수 호출
+                TakeDamage(ctx);
+                break;
+            case CombatPhase.combatStart:
+                
+                ApplyTo(CombatManager.inst.combatContext);
                 break;
         }
     }
@@ -57,9 +63,8 @@ public class Player : MonoBehaviour, ICombatHook, ICombatContextProvider
 
     public bool CanExecute(CombatPhase phase)
     {
-        bool canExecute = (phase == CombatPhase.valueConfirm);
+        bool canExecute = orders.ContainsKey(phase);
         return canExecute;
-
     }
     
     public void ApplyTo(CombatContext ctx)
@@ -94,6 +99,15 @@ public class PlayerState
         money = piv.money;
         savingMaximumDice = piv.savingMaximumDice;
         savingMaximumValue = piv.savingMaximumValue;
+
+    }
+    public PlayerState(PlayerState other)
+    {
+        maxHp = other.maxHp;
+        hp = other.hp;
+        money = other.money;
+        savingMaximumDice = other.savingMaximumDice;
+        savingMaximumValue = other.savingMaximumValue;
 
     }
 }

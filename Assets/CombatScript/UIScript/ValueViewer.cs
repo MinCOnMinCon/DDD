@@ -22,9 +22,6 @@ public abstract class ValueViewer : MonoBehaviour, ICombatHook
         return orders.TryGetValue(phase, out int order) ? order : int.MaxValue;
     }
 
-    public bool CanExecute(CombatPhase phase)
-    {
-        return phase == CombatPhase.valueChange;
-    }
+    public abstract bool CanExecute(CombatPhase phase);
 }
 

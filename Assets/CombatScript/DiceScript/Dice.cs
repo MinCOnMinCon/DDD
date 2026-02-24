@@ -16,12 +16,12 @@ public class Dice : MonoBehaviour
     private BoxCollider2D diceCollider;
     private Rigidbody2D diceRigidbody;
 
-    [SerializeField] private Transform eyesRoot;        // pipsRoot ¡æ eyesRoot
-    [SerializeField] private GameObject eyePrefab;      // pipPrefab ¡æ eyePrefab
+    [SerializeField] private Transform eyesRoot;        // pipsRoot ï¿½ï¿½ eyesRoot
+    [SerializeField] private GameObject eyePrefab;      // pipPrefab ï¿½ï¿½ eyePrefab
     [SerializeField] private SpriteRenderer backgroundRenderer;
 
-    [SerializeField] private float eyeSizeNormal = 0.10f;   // 2~6 °øÅë Å©±â
-    [SerializeField] private float eyeSizeSingle = 0.20f;   // 1 Àü¿ë (Á» Å­)
+    [SerializeField] private float eyeSizeNormal = 0.10f;   // 2~6 ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½
+    [SerializeField] private float eyeSizeSingle = 0.20f;   // 1 ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ Å­)
     [SerializeField] private float eyeDistant = 0.4f;
     private Color eyeColor;
     private Vector3[][] eyePositions;
@@ -29,10 +29,10 @@ public class Dice : MonoBehaviour
     private bool isCursorIn;
     private Vector3 cursorPos;
 
-    private Vector3 prevFramePos; //  µå·¡±×ÇßÀ» ¶§ ÀÌÀü ÇÁ·¹ÀÓ¿¡¼­ ÁÖ»çÀ§ À§Ä¡
-    private Vector3 curFramePos; // µå·¡±×°¡ ³¡³µÀ» ¶§ÀÇ ÁÖ»çÀ§ À§Ä¡
+    private Vector3 prevFramePos; //  ï¿½å·¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ó¿ï¿½ï¿½ï¿½ ï¿½Ö»ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
+    private Vector3 curFramePos; // ï¿½å·¡ï¿½×°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö»ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
     [SerializeField]
-    private float throwingSpeed; // ÁÖ»çÀ§ µå·¡±× ³¡³ª°í ³¯¶ó°¡´Â ¼Óµµ¸¦ ´À¸®°Ô ÇÏ±â À§ÇÑ º¯¼ö 
+    private float throwingSpeed; // ï¿½Ö»ï¿½ï¿½ï¿½ ï¿½å·¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ó°¡´ï¿½ ï¿½Óµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 
    
     public void DiceInit(int span, DiceType type)
     {

@@ -1,4 +1,4 @@
-using NUnit.Framework;
+癤퓎sing NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
@@ -15,13 +15,13 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
     private static int nonLoanSpan = int.MaxValue;
     
     [SerializeField]
-    private DiceInitValue div; // 비전투일 때의 diceManager의 데이터. 전투가 시작되면 div로 diceState를 생성해 전투에서 사용되는 스냅샷을 만든다.
+    private DiceInitValue div; // ???????? ???? diceManager?? ??????. ?????? ?????? div?? diceState?? ?????? ???????? ????? ???????? ?????.
 
     private DiceState diceState;
 
     [SerializeField]
     private GameObject dicePrefab;
-    [SerializeField]
+    
     private Vector3 diceSpawnPos;
     private void Awake()
     {
@@ -29,6 +29,7 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
         orders = new Dictionary<CombatPhase, int>();
         orders.Add(CombatPhase.turnStart, 0);
         orders.Add(CombatPhase.turnEnd, 2);
+        diceSpawnPos = transform.position;
     }
 
     private void Start()
@@ -53,8 +54,8 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
     }
 
     /// <summary>
-    /// 굴림 버튼을 눌렀을 때, 실제로 더 필요한 만큼 기본주사위와 패널티주사위, 대출 주사위를 생성하고 
-    /// 리스트의 모든 주사위를 돌림
+    /// ???? ????? ?????? ??, ?????? ?? ????? ??? ????????? ?均???????, ???? ??????? ??????? 
+    /// ??????? ??? ??????? ????
     /// </summary>
     public void TurnStartDiceGenerate()
     {
@@ -73,7 +74,7 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
        
     }
     /// <summary>
-    /// 주사위 생성함수. 주어진 파라미터로 주사위를 만든다. 그리고 리스트에 추가한다.
+    /// ????? ???????. ????? ??????? ??????? ?????. ????? ??????? ??????.
     /// </summary>
     /// <param name="neededDice"></param>
     /// <param name="diceType"></param>
@@ -130,8 +131,8 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
         }
     }
     // <summary>
-    /// 대출 버튼을 눌러 주사위 대출 시 호출되는 함수
-    /// diceState에 적힌 대출 시 받는 주사위 수만큼 수명이 loanDiceSpan인 주사위를 만든다.
+    /// ???? ????? ???? ????? ???? ?? ????? ???
+    /// diceState?? ???? ???? ?? ??? ????? ????? ?????? loanDiceSpan?? ??????? ?????.
     /// </summary>
     /// <param name="diceNum"></param>
     /// <param name="isLoan"></param>
@@ -157,18 +158,18 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
         
     }
     /// <summary>
-    /// type인 주사위를 diceNum만큼 굴려서 (부족하다면 추가함) 주사위 눈을 확정하는 함수
-    /// 유의할 것은 diceNum에 basicDiceNum, penaltyDiceNUm 변수만 들어가야 함.
+    /// type?? ??????? diceNum??? ?????? (???????? ?????) ????? ???? ?????? ???
+    /// ?????? ???? diceNum?? basicDiceNum, penaltyDiceNUm ?????? ????? ??.
     /// </summary>
     /// <param name="diceNum"></param>
     /// <param name="type"></param>
     private void ConfirmDice(List<GameObject> diceList, int[] weightList)
     {         
         
-        for(int idx = 0; idx < diceList.Count; idx++) // 기존에 생성된 주사위를 다시 굴림
+        for(int idx = 0; idx < diceList.Count; idx++) // ?????? ?????? ??????? ??? ????
         {
             if (diceList[idx].GetComponent<Dice>().diceData.curSlotRole == DiceSlotRole.Saving) continue;
-            //위 줄은 주사위가 만약 savingSlot에 있다면 reroll 하지 않게 만듦.
+            //?? ???? ??????? ???? savingSlot?? ???? reroll ???? ??? ????.
             diceList[idx].transform.localPosition = diceSpawnPos;
             diceList[idx].GetComponent<Dice>().DiceReset(RollDice(weightList));
         }
@@ -176,7 +177,7 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
     }
     
 
-    private int RollDice(int[] weightList) // 주어진 가중치 리스트로 무작위로 주사위 눈 하나를 뽑아 int로 리턴
+    private int RollDice(int[] weightList) // ????? ????? ??????? ???????? ????? ?? ????? ??? int?? ????
     {
         int result = ue.Random.Range(0, weightList[0]);
         int num = 0;
@@ -235,13 +236,13 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
     }
     public bool CanExecute(CombatPhase phase)
     {
-        bool canExecute = (phase == CombatPhase.turnStart || phase == CombatPhase.turnEnd);
+        bool canExecute = orders.ContainsKey(phase);
         return canExecute;
     }
     public void ApplyTo(CombatContext ctx)
     {
         ctx.diceState = diceState;
-        ctx.diceFactory = this; // 컴뱃 컨텍스트에 주사위를 생성하고 삭제하는 기능만 제공 
+        ctx.diceFactory = this; // ??? ???????? ??????? ??????? ??????? ???? ???? 
     }
     
 }
@@ -268,11 +269,11 @@ public class DiceState
         set => _loanDiceNum = value;
     }
 
-    public int basePenaltyDicePerLoan { get; private set; } // 기본 대출 당 패널티 주사위 획득 개수
-    public int curPenaltyDicePerLoan { get; set; } // 현재 대출 당 패널티 주사위 획득 개수
-    public int loanDicePerLoan { get; set; } // 대출 당 주는 기본 주사위 수
-    public int curLoanNum { get; set; } // 이번 턴 대출 횟수
-    public int loanDiceSpan { get; set; } // 대출 주사위 수명
+    public int basePenaltyDicePerLoan { get; private set; } // ?? ???? ?? ?均?? ????? ??? ????
+    public int curPenaltyDicePerLoan { get; set; } // ???? ???? ?? ?均?? ????? ??? ????
+    public int loanDicePerLoan { get; set; } // ???? ?? ??? ?? ????? ??
+    public int curLoanNum { get; set; } // ??? ?? ???? ???
+    public int loanDiceSpan { get; set; } // ???? ????? ????
 
     public int[] basicDiceWeight { get; set; }
     public int[] penaltyDiceWeight { get; set; }
@@ -308,6 +309,27 @@ public class DiceState
         basicDiceWeight[0] = div.diceEyeNum;
         penaltyDiceWeight[0] = div.diceEyeNum;
         loanDiceWeight[0] = div.diceEyeNum;
+    }
+
+    public DiceState(DiceState other)
+    {
+        _basicDiceNum = other._basicDiceNum;
+        _penaltyDiceNum = other._penaltyDiceNum;
+        _loanDiceNum = other._loanDiceNum;
+
+        basePenaltyDicePerLoan = other.basePenaltyDicePerLoan;
+        curPenaltyDicePerLoan = other.curPenaltyDicePerLoan;
+        loanDicePerLoan = other.loanDicePerLoan;
+        curLoanNum = other.curLoanNum;
+        loanDiceSpan = other.loanDiceSpan;
+
+        basicDiceWeight = (int[])other.basicDiceWeight.Clone();
+        penaltyDiceWeight = (int[])other.penaltyDiceWeight.Clone();
+        loanDiceWeight = (int[])other.loanDiceWeight.Clone();
+
+        basicDiceList = new List<GameObject>(other.basicDiceList);
+        penaltyDiceList = new List<GameObject>(other.penaltyDiceList);
+        loanDiceList = new List<GameObject>(other.loanDiceList);
     }
 }
 

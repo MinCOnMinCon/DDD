@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class DefenseValueViewer : ValueViewer
+public class PlayerDefViewer : ValueViewer
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     protected override void Awake()
@@ -10,11 +10,13 @@ public class DefenseValueViewer : ValueViewer
     }
     public override void OnCombatPhase(CombatPhase phase, CombatContext ctx)
     {
-        switch (phase)
-        {
-            case CombatPhase.valueChange:
-                tmp.text = (ctx.snapshot.calcDefenseValue + ctx.snapshot.baseDefenseValue).ToString();
-                break;
-        }
+       
+        tmp.text = (ctx.snapshot.calcDefenseValue + ctx.snapshot.baseDefenseValue).ToString();
+        
+    }
+    public override bool CanExecute(CombatPhase phase)
+    {
+        bool canExecute = orders.ContainsKey(phase);
+        return canExecute;
     }
 }

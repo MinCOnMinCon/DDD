@@ -43,7 +43,6 @@ public class CombatManager : MonoBehaviour
            
             combatContext.snapshot = CombatContextSnapshotFactory.Create(combatContext);
             ActivateHook(CombatPhase.valueChange);
-            combatContext.snapshot = null;
         }
     }
 
@@ -70,6 +69,7 @@ public class CombatManager : MonoBehaviour
     {
         ActivateHook(CombatPhase.turnEnd);
 
+        combatContext.turnCount++;
         isTurnStart = false;
         isValueConfirm = false;
     }
@@ -123,8 +123,8 @@ public class CombatContext
     {
         baseAttackValue = 0;
         baseDefenseValue = 0;
-        baseDefenseValue = 0;
-      
+        
+        snapshot = new CombatContextSnapshot();
         turnCount = 1;
     }
     

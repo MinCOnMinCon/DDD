@@ -43,13 +43,13 @@ public class ComboManager : MonoBehaviour, ICombatHook
         
         foreach (var dice in ctx.diceList)
         { 
-            // 1. ±âº» ´« ¹Ý¿µ
+            // 1. ï¿½âº» ï¿½ï¿½ ï¿½Ý¿ï¿½
             ctx.eyeCounts[dice.diceEye - 1]++;
            
 
         }
-        // 2. eyeCounts Á¦ÀÛ¿¡ °ü¿©ÇÏ´Â À¯¹° Ã³¸®
-        // ±âº» ´« ¹Ý¿µÀÌ µÈ eyeCounts¸¦ º¸°í ±×°É ¼öÁ¤ÇÑ´Ù.
+        // 2. eyeCounts ï¿½ï¿½ï¿½Û¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
+        // ï¿½âº» ï¿½ï¿½ ï¿½Ý¿ï¿½ï¿½ï¿½ ï¿½ï¿½ eyeCountsï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½×°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
         var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.CreateSnapshot);
         foreach (var relic in stageRelics)
         {
@@ -64,11 +64,11 @@ public class ComboManager : MonoBehaviour, ICombatHook
     
     public void BuildComboCandidate(ComboContext ctx)
     {
-        // 1. ±âº» ÄÞº¸ ÈÄº¸ ¼±Á¤
+        // 1. ï¿½âº» ï¿½Þºï¿½ ï¿½Äºï¿½ ï¿½ï¿½ï¿½ï¿½
         ctx.candidate = GetBaseCandidate(ctx.eyeCounts);
      
         var stageRelics = comboRelicList.Where(r => r.Stage == ComboStage.BuildCandidate);
-        // 2. ÄÞº¸ °ü¿© À¯¹° Àû¿ë
+        // 2. ï¿½Þºï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         foreach (var relic in stageRelics)
         {
            
@@ -76,7 +76,7 @@ public class ComboManager : MonoBehaviour, ICombatHook
             ctx.tempCandidate = ctx.candidate;
             relic.Activate(ctx);
 
-            // 3. ÈÄº¸ Áß ´«ÀÇ °³¼ö°¡ ´õ ¸¹Àº ÈÄº¸¸¦ °í¸¥´Ù. °°À¸¸é ´«ÀÌ ´õ ³ôÀº ÈÄº¸¸¦ °í¸¥´Ù.
+            // 3. ï¿½Äºï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Äºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Äºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
             if (ctx.tempCandidate.Count > ctx.candidate.Count)
             {
                 ctx.candidate = ctx.tempCandidate;
@@ -193,7 +193,7 @@ public class ComboManager : MonoBehaviour, ICombatHook
                 //ApplyComboEffect(defenseCtx);
                 break;
             case CombatPhase.valueConfirm:
-                if (attackCtx == null && defenseCtx == null) break; // ¾î¶² ½½·Ô¿¡µµ ÁÖ»çÀ§°¡ ¾ø´Â °æ¿ì => ±×³É ³Ñ±è
+                if (attackCtx == null && defenseCtx == null) break; // ï¿½î¶² ï¿½ï¿½ï¿½Ô¿ï¿½ï¿½ï¿½ ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ => ï¿½×³ï¿½ ï¿½Ñ±ï¿½
                 ApplyEffectAfterConfirm(attackCtx);
                 ApplyEffectAfterConfirm(defenseCtx); 
                 
@@ -209,13 +209,13 @@ public class ComboManager : MonoBehaviour, ICombatHook
     }
     public bool CanExecute(CombatPhase phase)
     {
-        bool canExecute = (phase == CombatPhase.valueChange || phase == CombatPhase.valueConfirm);
+        bool canExecute = orders.ContainsKey(phase);
         return canExecute;
     }
 }
 
 /// <summary>
-/// ±âº» ÄÞº¸ È¿°ú¸¦ ´ëÃ¼ÇÏ´Â À¯¹°ÀÌ »ó¼ÓÇÏ´Â ÀÎÅÍÆäÀÌ½º
+/// ï¿½âº» ï¿½Þºï¿½ È¿ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì½ï¿½
 /// </summary>
 public interface IComboEffectReplace { } 
 public interface IComboRelic
@@ -232,9 +232,9 @@ public class ComboContext
     public IReadOnlyList<DiceData> diceList;
     public int[] eyeCounts;
 
-    public bool isBaseComboReplaced; // ÄÞº¸ È¿°ú ´ëÃ¼ À¯¹°ÀÌ ¹ßµ¿ÇØ ±âº» ÄÞº¸ È¿°ú°¡ ´ëÃ¼µÇ¾ú´ÂÁö Ã¼Å©ÇÏ´Â º¯¼ö
-    public ComboCandidate candidate; // °¡Àå ÃÖ°íÀÇ candidate
-    public ComboCandidate tempCandidate; // À¯¹° È¿°ú·Î ¹ß»ýÇÑ ÀÓ½Ã candidate
+    public bool isBaseComboReplaced; // ï¿½Þºï¿½ È¿ï¿½ï¿½ ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ßµï¿½ï¿½ï¿½ ï¿½âº» ï¿½Þºï¿½ È¿ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½ï¿½ Ã¼Å©ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½
+    public ComboCandidate candidate; // ï¿½ï¿½ï¿½ï¿½ ï¿½Ö°ï¿½ï¿½ï¿½ candidate
+    public ComboCandidate tempCandidate; // ï¿½ï¿½ï¿½ï¿½ È¿ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½ï¿½ ï¿½Ó½ï¿½ candidate
     public ComboContext(CombatContext combatContext,
         DiceSlotRole slotRole,
         IReadOnlyList<DiceData> diceList)

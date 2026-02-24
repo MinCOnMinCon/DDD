@@ -19,7 +19,6 @@ public class Enemy : MonoBehaviour, ICombatHook, ICombatContextProvider
     private void Start()
     {
         CombatManager.inst.HookRegister(this);
-        ApplyTo(CombatManager.inst.combatContext);
     }
 
     private void Initialize()
@@ -27,6 +26,12 @@ public class Enemy : MonoBehaviour, ICombatHook, ICombatContextProvider
         
         action = EnemyActionFactory.Create(data.id);
         action.GetEnemyData(data);
+
+        orders = new Dictionary<CombatPhase, int>();
+        orders.Add(CombatPhase.turnStart, 1);
+        orders.Add(CombatPhase.valueConfirm, 0);
+        orders.Add(CombatPhase.turnEnd, 1);
+        orders.Add(CombatPhase.combatStart, 2);
 
     }
 
@@ -40,7 +45,7 @@ public class Enemy : MonoBehaviour, ICombatHook, ICombatContextProvider
     }
     public bool CanExecute(CombatPhase phase)
     {
-        bool canExecute = phase == CombatPhase.turnStart || phase == CombatPhase.valueConfirm || phase == CombatPhase.turnEnd;
+        bool canExecute = orders.ContainsKey(phase);
         return canExecute;
     }
 
@@ -61,6 +66,10 @@ public class Enemy : MonoBehaviour, ICombatHook, ICombatContextProvider
                 action.ApplyEffect(ctx, phase);
                 TakeDamage(ctx);
                 break;
+            case CombatPhase.combatStart:
+                
+                ApplyTo(CombatManager.inst.combatContext);
+                break;
         }
 
     }
@@ -70,7 +79,7 @@ public class Enemy : MonoBehaviour, ICombatHook, ICombatContextProvider
         ctx.enemyState = new EnemyState
         {
             maxHp = data.maxHp,
-            currentHp = data.maxHp,
+            hp = data.maxHp,
             currentAttackValue = 0,
             currentDefenseValue = 0,
             intent = EnemyIntent.None
@@ -80,10 +89,10 @@ public class Enemy : MonoBehaviour, ICombatHook, ICombatContextProvider
 
     public void TakeDamage(CombatContext ctx)
     {
-        int playerAtkVal = ctx.snapshot.calcAttackValue + ctx.baseAttackValue;
-        ctx.enemyState.currentHp += ctx.enemyState.currentDefenseValue - playerAtkVal;
+        int playerAtkVal = ctx.snapshot.calcAttackValue + ctx.snapshot.baseAttackValue;
+        ctx.enemyState.hp += ctx.enemyState.currentDefenseValue - playerAtkVal;
 
-        if (ctx.enemyState.currentHp <= 0)
+        if (ctx.enemyState.hp <= 0)
             Die();
     }
 
@@ -100,7 +109,7 @@ public class Enemy : MonoBehaviour, ICombatHook, ICombatContextProvider
 }
 public class EnemyState
 {
-    public int currentHp;
+    public int hp;
     public int maxHp;
 
     public int currentAttackValue;

@@ -59,7 +59,7 @@ public class CombatStartManager : MonoBehaviour, ICombatHook
     }
     public bool CanExecute(CombatPhase phase)
     {
-        bool canExecute = (phase == CombatPhase.combatStart);
+        bool canExecute = orders.ContainsKey(phase);
         return canExecute;
     }
 
