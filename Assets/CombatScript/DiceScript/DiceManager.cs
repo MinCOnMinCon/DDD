@@ -241,7 +241,7 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
     }
     public void ApplyTo(CombatContext ctx)
     {
-        ctx.diceState = diceState;
+        ctx.diceState = new DiceState(diceState);
         ctx.diceFactory = this; // ??? ???????? ??????? ??????? ??????? ???? ???? 
     }
     
@@ -283,7 +283,7 @@ public class DiceState
 
     public List<GameObject> loanDiceList { get; private set; }
 
-    public DiceState(DiceInitValue div)
+    public DiceState(DiceInitValue div) //다이스 매니저 최초 생성자
     {
         basicDiceNum = div.basicDiceNum;
         penaltyDiceNum = div.penaltyDiceNum;
@@ -311,7 +311,7 @@ public class DiceState
         loanDiceWeight[0] = div.diceEyeNum;
     }
 
-    public DiceState(DiceState other)
+    public DiceState(DiceState other) // 컴뱃 컨텍스트 전달용 복사 생성자
     {
         _basicDiceNum = other._basicDiceNum;
         _penaltyDiceNum = other._penaltyDiceNum;

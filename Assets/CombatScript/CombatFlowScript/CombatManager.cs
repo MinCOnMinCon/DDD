@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class CombatManager : MonoBehaviour
 {
@@ -72,6 +73,12 @@ public class CombatManager : MonoBehaviour
         combatContext.turnCount++;
         isTurnStart = false;
         isValueConfirm = false;
+    }
+
+    public void CombatEnd()
+    {
+        ActivateHook(CombatPhase.combatEnd);
+        SceneManager.LoadScene("StageScene");
     }
     public void HookRegister(ICombatHook hook)
     {

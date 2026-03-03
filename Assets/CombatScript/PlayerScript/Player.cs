@@ -32,12 +32,12 @@ public class Player : MonoBehaviour, ICombatHook, ICombatContextProvider
         ctx.playerState.hp += playerDefVal - ctx.enemyState.currentAttackValue;
         if (ctx.playerState.hp <= 0)
         {
-            Die();
+            Die(ctx);
         }
 
     }
     
-    private void Die()
+    private void Die(CombatContext ctx)
     {
 
     }
@@ -69,7 +69,7 @@ public class Player : MonoBehaviour, ICombatHook, ICombatContextProvider
     
     public void ApplyTo(CombatContext ctx)
     {
-        ctx.playerState = playerState;
+        ctx.playerState = new PlayerState(playerState);
     }
 }
 
@@ -92,22 +92,24 @@ public class PlayerState
     public int savingMaximumValue { get; set; }
     public int savingMaximumDice { get; set; }
 
-    public PlayerState(PlayerInitValue piv)
+    public int shopGauge;
+    public PlayerState(PlayerInitValue piv) // 플레이어 최초 생성시 초기화 용 생성자
     {
         maxHp = piv.maxHp;
         hp = maxHp;
         money = piv.money;
         savingMaximumDice = piv.savingMaximumDice;
         savingMaximumValue = piv.savingMaximumValue;
+        shopGauge = 0;
 
     }
-    public PlayerState(PlayerState other)
+    public PlayerState(PlayerState other) // combat context에 전달하기 위한 복사 생성자.
     {
         maxHp = other.maxHp;
         hp = other.hp;
         money = other.money;
         savingMaximumDice = other.savingMaximumDice;
         savingMaximumValue = other.savingMaximumValue;
-
+        shopGauge = other.shopGauge;
     }
 }

@@ -7,7 +7,8 @@ public class Enemy : MonoBehaviour, ICombatHook, ICombatContextProvider
 {
     [SerializeField]
     private EnemyData data; // 스크립터블로 직접 넣기
-    
+    [SerializeField]
+    private RewardData rewardData; // 보상 테이블
     private EnemyAction action;
     private Dictionary<CombatPhase, int> orders;
     
@@ -26,6 +27,7 @@ public class Enemy : MonoBehaviour, ICombatHook, ICombatContextProvider
         
         action = EnemyActionFactory.Create(data.id);
         action.GetEnemyData(data);
+        
 
         orders = new Dictionary<CombatPhase, int>();
         orders.Add(CombatPhase.turnStart, 1);
@@ -93,19 +95,20 @@ public class Enemy : MonoBehaviour, ICombatHook, ICombatContextProvider
         ctx.enemyState.hp += ctx.enemyState.currentDefenseValue - playerAtkVal;
 
         if (ctx.enemyState.hp <= 0)
-            Die();
+            Die(ctx);
     }
 
-    private void Die()
+    private void Die(CombatContext ctx)
     {
-        Reward();
-        Destroy(gameObject);
+        RewardEntry reward = rewardData.GetReward(data.rewardValue);
+        ctx.playerState.money += reward.money;
+        ctx.playerState.shopGauge += reward.shopGauge;
+        CombatManager.inst.CombatEnd();
+
+        
     }
 
-    private void Reward()
-    {
-        int reward = data.rewardValue;
-    }
+    
 }
 public class EnemyState
 {
