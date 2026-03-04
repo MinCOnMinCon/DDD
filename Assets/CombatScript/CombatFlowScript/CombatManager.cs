@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -7,6 +8,7 @@ using UnityEngine.SceneManagement;
 
 public class CombatManager : MonoBehaviour
 {
+    public event Action<PlayerState> OnPlayerStateAvailable;
     public CombatContext combatContext { get; private set; }
     public static CombatManager inst { get; private set; }
     private List<ICombatHook> combatHooks;
@@ -62,7 +64,7 @@ public class CombatManager : MonoBehaviour
     public void TurnStart()
     {
         if(isTurnStart) return;
-        CombatStart(); // Å×½ºÆ®¸¦ À§ÇÑ ÀÓ½Ã ÄÚµå
+        CombatStart(); // ï¿½×½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ó½ï¿½ ï¿½Úµï¿½
         isTurnStart = true;
         ActivateHook(CombatPhase.turnStart);
     }
@@ -97,13 +99,13 @@ public class CombatManager : MonoBehaviour
 
         foreach (var hook in executableHooks)
         {
-            Debug.Log("ÇöÀç ÆäÀÌÁî : " + phase.ToString() + " ¹ßµ¿ ÈÅ : " + hook.GetOrder(phase));
+            Debug.Log("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ : " + phase.ToString() + " ï¿½ßµï¿½ ï¿½ï¿½ : " + hook.GetOrder(phase));
             hook.OnCombatPhase(phase, combatContext);
         }
     }
 }
 /// <summary>
-/// ÀüÅõ¿¡¼­ »ç¿ëÇÏ´Â ÄÁÅØ½ºÆ®
+/// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½Ø½ï¿½Æ®
 /// 
 /// </summary>
 public class CombatContext 
@@ -138,9 +140,9 @@ public class CombatContext
 }
 
 /// <summary>
-/// CombatPhase°¡ valueChangeÀÏ ¶§ ¸¸µå´Â ÄÄ¹î ÄÁÅØ½ºÆ®ÀÇ ½º³À¼¦. 
-/// valueChange°¡ È®Á¤³ª¸é ÀÌ ÄÄ¹î ÄÁÅØ½ºÆ® ½º³À¼¦ÀÇ ³»¿ëÀ» Àû¿ë½ÃÅ²´Ù.
-/// È®Á¤³ªÁö ¾Ê¾Ò´Ù¸é ½º³À¼¦À» ¹ö¸°´Ù.
+/// CombatPhaseï¿½ï¿½ valueChangeï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ä¹ï¿½ ï¿½ï¿½ï¿½Ø½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½. 
+/// valueChangeï¿½ï¿½ È®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ä¹ï¿½ ï¿½ï¿½ï¿½Ø½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Å²ï¿½ï¿½.
+/// È®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò´Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
 /// </summary>
 public class CombatContextSnapshot 
 {
@@ -148,15 +150,15 @@ public class CombatContextSnapshot
     public int currentHp;
     public int maxHp;
 
-    // ===== Base Values (ÀüÅõ ½ÃÀÛ ±âÁØ) =====
+    // ===== Base Values (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½) =====
     public int baseAttackValue;
     public int baseDefenseValue;
 
-    // ===== Calculated Values (valueChange Àü¿ë) =====
+    // ===== Calculated Values (valueChange ï¿½ï¿½ï¿½ï¿½) =====
     public int calcAttackValue;
     public int calcDefenseValue;
 
-    // ===== Slot Dice (º¹»çº» DiceData) =====
+    // ===== Slot Dice (ï¿½ï¿½ï¿½çº» DiceData) =====
     public List<DiceData> attackDice;
     public List<DiceData> defenseDice;
     public List<DiceData> saveDice;
@@ -197,14 +199,14 @@ public static class CombatContextSnapshotFactory
     }
 }
 
-public interface ICombatHook // °¢ ÆäÀÌÁî¸¶´Ù ÄÄ¹î ¸Å´ÏÀú°¡ ¿äÃ»ÇØ¼­ ÇÔ¼ö¸¦ ½ÇÇà½ÃÅ°´Â ¾ÖµéÀÌ »ó¼ÓÇÏ´Â ÀÎÅÍÆäÀÌ½º
+public interface ICombatHook // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½î¸¶ï¿½ï¿½ ï¿½Ä¹ï¿½ ï¿½Å´ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã»ï¿½Ø¼ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Å°ï¿½ï¿½ ï¿½Öµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì½ï¿½
 {
     int GetOrder(CombatPhase phase);
     bool CanExecute(CombatPhase phase);
     void OnCombatPhase(CombatPhase phase, CombatContext ctx);
 
 }
-public interface ICombatContextProvider // ÄÄ¹î ÄÁÅØ½ºÆ®ÀÇ º¯¼ö¸¦ Ã¤¿ö ³Ö¾î¾ß ÇÏ´Â ¾ÖµéÀÌ »ó¼ÓÇÏ´Â ÀÎÅÍÆäÀÌ½º
+public interface ICombatContextProvider // ï¿½Ä¹ï¿½ ï¿½ï¿½ï¿½Ø½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã¤ï¿½ï¿½ ï¿½Ö¾ï¿½ï¿½ ï¿½Ï´ï¿½ ï¿½Öµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì½ï¿½
 {
     void ApplyTo(CombatContext ctx);
 }

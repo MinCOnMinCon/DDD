@@ -1066,6 +1066,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   data: {fileID: 11400000, guid: e1b5f9c07af747f4583423a972644568, type: 2}
+  rewardData: {fileID: 11400000, guid: 89f81c9c25feb9946baf9e26027c2a3f, type: 2}
 --- !u!4 &536726003
 Transform:
   m_ObjectHideFlags: 0

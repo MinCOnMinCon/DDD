@@ -29,6 +29,7 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
         orders = new Dictionary<CombatPhase, int>();
         orders.Add(CombatPhase.turnStart, 0);
         orders.Add(CombatPhase.turnEnd, 2);
+        orders.Add(CombatPhase.combatEnd, 1);
         diceSpawnPos = transform.position;
     }
 
@@ -50,6 +51,10 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
         if (Input.GetKeyDown(KeyCode.S))
         {
             TurnStartDiceGenerate();
+        }
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            CombatManager.inst.CombatEnd();
         }
     }
 
@@ -227,6 +232,10 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
             case CombatPhase.turnEnd:
                 CheckDiceSpan();
                 break;
+            case CombatPhase.combatEnd:
+                SyncStateFromCombatContext(ctx);
+                break;
+
         }
        
     }
@@ -244,7 +253,14 @@ public class DiceManager : MonoBehaviour, ICombatHook, ICombatContextProvider, I
         ctx.diceState = new DiceState(diceState);
         ctx.diceFactory = this; // ??? ???????? ??????? ??????? ??????? ???? ???? 
     }
-    
+    public void SyncStateFromCombatContext(CombatContext context)
+    {
+        this.diceState.penaltyDiceNum = context.diceState.penaltyDiceNum;
+        this.diceState.basicDiceWeight = context.diceState.basicDiceWeight;
+        this.diceState.penaltyDiceWeight = context.diceState.penaltyDiceWeight;
+        this.diceState.loanDiceWeight = context.diceState.loanDiceWeight;
+    }
+
 }
 
 public class DiceState

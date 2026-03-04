@@ -21,6 +21,7 @@ public class Player : MonoBehaviour, ICombatHook, ICombatContextProvider
         orders = new Dictionary<CombatPhase, int>();
         orders[CombatPhase.valueConfirm] = 0;
         orders[CombatPhase.combatStart] = 1;
+        orders[CombatPhase.combatEnd] = 0;
     }
     private void Start()
     {
@@ -54,6 +55,9 @@ public class Player : MonoBehaviour, ICombatHook, ICombatContextProvider
                 
                 ApplyTo(CombatManager.inst.combatContext);
                 break;
+            case CombatPhase.combatEnd:
+                SyncStateFromCombatContext(ctx);
+                break;
         }
     }
     public int GetOrder(CombatPhase phase)
@@ -71,29 +75,55 @@ public class Player : MonoBehaviour, ICombatHook, ICombatContextProvider
     {
         ctx.playerState = new PlayerState(playerState);
     }
+
+    public void SyncStateFromCombatContext(CombatContext context)
+    {
+        this.playerState.money = context.playerState.money;
+        this.playerState.hp = context.playerState.hp;
+        this.playerState.shopGauge = context.playerState.shopGauge;
+    }
 }
 
 public class PlayerState
 {
+    public Action<int> OnHpChanged;
+    public Action<int> OnMoneyChanged;
+    public Action<int> OnShopGaugeChanged;
     public int maxHp { set; private get; }
     private int _hp;
     public int hp
     {
         get => _hp;
-        set => _hp = Mathf.Max(0, value);
+        set {
+            _hp = Mathf.Max(0, value);
+            OnHpChanged?.Invoke(_hp);
+        }
     }
     private int _money;
     public int money
     {
         get => _money;
-        set => _money = Mathf.Max(0, value);
+        set
+        {
+            _money = Mathf.Max(0, value);
+            OnMoneyChanged?.Invoke(_money);
+        }
     }
 
     public int savingMaximumValue { get; set; }
     public int savingMaximumDice { get; set; }
 
-    public int shopGauge;
-    public PlayerState(PlayerInitValue piv) // ÇÃ·¹ÀÌ¾î ÃÖÃÊ »ý¼º½Ã ÃÊ±âÈ­ ¿ë »ý¼ºÀÚ
+    private int _shopGauge;
+    public int shopGauge
+    {
+        get => _shopGauge;
+        set
+        {
+            _shopGauge = Mathf.Max(0, value);
+            OnShopGaugeChanged?.Invoke(_shopGauge);
+        }
+    }
+    public PlayerState(PlayerInitValue piv) // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     {
         maxHp = piv.maxHp;
         hp = maxHp;
@@ -103,7 +133,7 @@ public class PlayerState
         shopGauge = 0;
 
     }
-    public PlayerState(PlayerState other) // combat context¿¡ Àü´ÞÇÏ±â À§ÇÑ º¹»ç »ý¼ºÀÚ.
+    public PlayerState(PlayerState other) // combat contextï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
     {
         maxHp = other.maxHp;
         hp = other.hp;

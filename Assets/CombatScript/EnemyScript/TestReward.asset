@@ -14,23 +14,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RewardData
   rewards:
   - level: 1
-    money: 0
+    money: 11
     shopGauge: 1
   - level: 2
-    money: 0
+    money: 22
     shopGauge: 1
   - level: 3
-    money: 0
+    money: 33
     shopGauge: 1
   - level: 4
-    money: 0
+    money: 44
     shopGauge: 1
   - level: 5
-    money: 0
+    money: 55
     shopGauge: 2
   - level: 6
-    money: 0
+    money: 66
     shopGauge: 2
   - level: 7
-    money: 0
+    money: 77
     shopGauge: 3
